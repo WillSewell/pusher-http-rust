@@ -123,7 +123,7 @@ fn update_request_url(method: &str, request_url: &mut Url, key: &str, secret: &s
 
   let query_string = match request_url.query {
     Some(ref qs) => qs.to_string(),
-    None => "".to_string(),
+    None => panic!("No query string!"),
   };
 
   let to_sign = format!("{}\n{}\n{}", method, path, query_string);
