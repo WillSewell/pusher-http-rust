@@ -1,5 +1,5 @@
 [package]
-name = "pusher-http-rust"
+name = "pusher"
 version = "0.1.0"
 authors = ["Jamie Patel <jamie@notespublication.com>"]
 
