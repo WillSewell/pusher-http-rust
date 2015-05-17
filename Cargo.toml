@@ -1,0 +1,13 @@
+[package]
+name = "pusher-http-rust"
+version = "0.1.0"
+authors = ["Jamie Patel <jamie@notespublication.com>"]
+
+[dependencies]
+hyper="0.5.0"
+rust-crypto = "*"
+rustc-serialize = "0.3"
+time = "0.1"
+
+[dependencies.url]
+git = "https://github.com/servo/rust-url"
