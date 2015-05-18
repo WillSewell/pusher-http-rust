@@ -15,6 +15,8 @@ fn main() {
   hash_map.insert("message", "hello world");
 
 
-  pusher.trigger("test_channel", "my_event", &hash_map)
+  pusher.trigger("test_channel", "my_event", &hash_map);
+
+  pusher.channels();
 
 }

@@ -69,11 +69,12 @@ impl <'a>Pusher<'a> {
     send_request(method, request_url, Some(&body));
   }
 
-  pub fn channels(&self, channel_name: &str){
+  pub fn channels(&self){
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels", self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, self.key, self.secret, None);
+    send_request(method, request_url, None);
   }
 
 }
