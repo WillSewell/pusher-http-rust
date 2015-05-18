@@ -79,7 +79,13 @@ impl <'a>Pusher<'a> {
     send_request(method, request_url, None);
   }
 
-  // pub fn channel(&self, channe_name: &str, params: )
+  pub fn channel(&self, channel_name: &str, params: QueryParameters){
+    let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels/{}", self.app_id, channel_name);
+    let mut request_url = Url::parse(&request_url_string).unwrap();
+    let method = "GET";
+    update_request_url(method, &mut request_url, self.key, self.secret, None, params);
+    send_request(method, request_url, None);
+  }
 
 }
 
@@ -147,10 +153,9 @@ fn update_request_url(method: &str, request_url: &mut Url, key: &str, secret: &s
     }
   }
 
-
   request_url.set_query_from_pairs(query_pairs.iter().map(|&(k,v)| (k,v)));
 
-  let query_string = match request_url.query {
+  let query_string = match request_url.lossy_percent_decode_query() {
     Some(ref qs) => qs.to_string(),
     None => panic!("No query string!"),
   };
