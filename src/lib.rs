@@ -53,21 +53,58 @@ struct ChannelUser {
 
 const AUTH_VERSION : &'static str = "1.0";
 
-pub struct Pusher<'a> {
-  app_id: &'a str,
-  key: &'a str,
-  secret: &'a str,
+#[derive(Debug)]
+pub struct Pusher {
+  app_id: String,
+  key: String,
+  secret: String, 
+  host: String,
+  secure: bool,
+}
+
+#[derive(Debug)]
+pub struct PusherBuilder {
+  app_id: String,
+  key: String,
+  secret: String, 
+  host: String,
+  secure: bool,
+}
+
+impl PusherBuilder {
+  pub fn host(mut self, host: &str) -> PusherBuilder {
+    self.host = host.to_string();
+    self
+  }
+
+  pub fn secure(mut self, secure: bool) -> PusherBuilder {  
+    self.secure = true;
+    self
+  }
+
+  pub fn finalize(self) -> Pusher {
+   Pusher {
+      app_id: self.app_id,
+      key: self.key,
+      secret: self.secret,
+      host: self.host,
+      secure: self.secure,
+    } 
+  }
+
 }
 
 pub type QueryParameters<'a> = Option<Vec<(&'a str, &'a str)>>;
 
-impl <'a>Pusher<'a> {
+impl Pusher{
 
-  pub fn new(app_id: &'a str, key: &'a str, secret: &'a str) -> Pusher<'a> {
-    Pusher {
-      app_id: app_id,
-      key: key,
-      secret: secret,
+  pub fn new(app_id: &str, key: &str, secret: &str) -> PusherBuilder {
+    PusherBuilder {
+      app_id: app_id.to_string(),
+      key: key.to_string(),
+      secret: secret.to_string(),
+      host: "api.pusherapp.com".to_string(),
+      secure: false,
     }
   }
 
@@ -107,7 +144,7 @@ impl <'a>Pusher<'a> {
     let body = json::encode(&raw_body).unwrap();
 
     let method = "POST";
-    update_request_url(method, &mut request_url, self.key, self.secret, Some(&body), None);
+    update_request_url(method, &mut request_url, &self.key, &self.secret, Some(&body), None);
     send_request(method, request_url, Some(&body));
   }
 
@@ -115,7 +152,7 @@ impl <'a>Pusher<'a> {
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels", self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
-    update_request_url(method, &mut request_url, self.key, self.secret, None, params);
+    update_request_url(method, &mut request_url, &self.key, &self.secret, None, params);
     let encoded = send_request(method, request_url, None);
     let decoded : ChannelList = json::decode(&encoded[..]).unwrap();
     decoded
@@ -125,7 +162,7 @@ impl <'a>Pusher<'a> {
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels/{}", self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
-    update_request_url(method, &mut request_url, self.key, self.secret, None, params);
+    update_request_url(method, &mut request_url, &self.key, &self.secret, None, params);
     let encoded = send_request(method, request_url, None);
     let decoded : Channel = json::decode(&encoded[..]).unwrap();
     decoded
@@ -135,7 +172,7 @@ impl <'a>Pusher<'a> {
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels/{}/users", self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
-    update_request_url(method, &mut request_url, self.key, self.secret, None, None);
+    update_request_url(method, &mut request_url, &self.key, &self.secret, None, None);
     let encoded = send_request(method, request_url, None);
     let decoded : ChannelUserList = json::decode(&encoded[..]).unwrap();
     decoded
