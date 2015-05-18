@@ -11,6 +11,7 @@ use hyper::method::Method;
 use rustc_serialize::json;
 use hyper::Url;
 
+use std::collections::HashMap;
 
 use crypto::md5::Md5;
 use crypto::digest::Digest;
@@ -18,15 +19,35 @@ use crypto::hmac::Hmac;
 use crypto::sha2::Sha256;
 
 use rustc_serialize::hex::ToHex;
-
 use crypto::mac::Mac;
-
 
 #[derive(RustcDecodable, RustcEncodable)]
 struct TriggerEventData {
     name: String,
     channels: Vec<String>,
     data: String,
+}
+
+#[derive(RustcDecodable, Debug)]
+pub struct ChannelList {
+    channels: HashMap<String, Channel>,
+}
+
+#[derive(RustcDecodable, Debug)]
+pub struct Channel {
+  occupied: Option<bool>,
+  user_count: Option<i32>,
+  subscription_count: Option<i32>,
+}
+
+#[derive(RustcDecodable, Debug)]
+pub struct ChannelUserList {
+  users: Vec<ChannelUser>,
+}
+
+#[derive(RustcDecodable, Debug)]
+struct ChannelUser {
+  id: String,
 }
 
 const AUTH_VERSION : &'static str = "1.0";
@@ -71,33 +92,39 @@ impl <'a>Pusher<'a> {
     send_request(method, request_url, Some(&body));
   }
 
-  pub fn channels(&self, params: QueryParameters){
+  pub fn channels(&self, params: QueryParameters) -> ChannelList{
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels", self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, self.key, self.secret, None, params);
-    send_request(method, request_url, None);
+    let encoded = send_request(method, request_url, None);
+    let decoded : ChannelList = json::decode(&encoded[..]).unwrap();
+    decoded
   }
 
-  pub fn channel(&self, channel_name: &str, params: QueryParameters){
+  pub fn channel(&self, channel_name: &str, params: QueryParameters) -> Channel{
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels/{}", self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, self.key, self.secret, None, params);
-    send_request(method, request_url, None);
+    let encoded = send_request(method, request_url, None);
+    let decoded : Channel = json::decode(&encoded[..]).unwrap();
+    decoded
   }
 
-  pub fn channel_users(&self, channel_name : &str) {
+  pub fn channel_users(&self, channel_name : &str) -> ChannelUserList {
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels/{}/users", self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, self.key, self.secret, None, None);
-    send_request(method, request_url, None);
+    let encoded = send_request(method, request_url, None);
+    let decoded : ChannelUserList = json::decode(&encoded[..]).unwrap();
+    decoded
   }
 
 }
 
-fn send_request(method: &str, request_url: Url, data: Option<&str>) {
+fn send_request(method: &str, request_url: Url, data: Option<&str>) -> String {
     let mut client = Client::new();
 
     let request_method = match method {
@@ -116,8 +143,9 @@ fn send_request(method: &str, request_url: Url, data: Option<&str>) {
 
     let mut body = String::new();
     res.read_to_string(&mut body).unwrap();
+    println!("{:?}", body);
 
-    println!("Response: {}", body);
+    body
 
 }
 

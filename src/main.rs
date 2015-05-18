@@ -22,12 +22,17 @@ fn main() {
 
   let channels_params = vec![("filter_by_prefix", "presence-"), ("info", "user_count")];
 
-  pusher.channels(Some(channels_params));
+  let channels = pusher.channels(Some(channels_params));
+
+  println!("{:?}", channels);
 
   let channel_params = vec![("info", "user_count,subscription_count")];
 
-  pusher.channel("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-hu9e5NecuNr", Some(channel_params));
+  let channel = pusher.channel("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-hu9e5NecuNr", Some(channel_params));
+  println!("{:?}", channel);
 
-  pusher.channel_users("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-hu9e5NecuNr");
+  let users = pusher.channel_users("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-hu9e5NecuNr");
+  println!("{:?}", users);
+
 
 }
