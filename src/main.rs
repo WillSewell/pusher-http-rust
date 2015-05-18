@@ -1,6 +1,7 @@
 extern crate pusher;
 
 use pusher::Pusher;
+use std::collections::HashMap;
 
 fn main() {
 
@@ -10,7 +11,10 @@ fn main() {
 
   let pusher = Pusher::new(app_id, key, secret);
 
-  pusher.trigger("test_channel", "my_event", "{\"message\":\"hello world\"}")
+  let mut hash_map = HashMap::new();
+  hash_map.insert("message", "hello world");
 
+
+  pusher.trigger("test_channel", "my_event", &hash_map)
 
 }

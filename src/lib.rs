@@ -47,25 +47,28 @@ impl <'a>Pusher<'a> {
     }
   }
 
-  pub fn trigger(&self, channel: &str, event: &str, data: &str) { // TODO: data other than string 
+  pub fn trigger<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload) { // TODO: data other than string 
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/events", self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
 
     let channels = vec![channel.to_string()];
 
-    let raw_data = TriggerEventData{
+    let json_payload = json::encode(&payload).unwrap();
+
+
+    let raw_body = TriggerEventData{
       name: event.to_string(),
       channels: channels,
-      data: data.to_string(),
+      data: json_payload,
     };
 
-    let data = json::encode(&raw_data).unwrap();
+    let body = json::encode(&raw_body).unwrap();
 
     let method = "POST";
 
-    update_request_url(method, &mut request_url, self.key, self.secret, &data);
+    update_request_url(method, &mut request_url, self.key, self.secret, &body);
 
-    send_request(method, request_url, &data);
+    send_request(method, request_url, &body);
 
     }
 }
