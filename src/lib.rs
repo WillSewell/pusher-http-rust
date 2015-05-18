@@ -72,18 +72,28 @@ impl <'a>Pusher<'a> {
   }
 
   pub fn trigger<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload) {
-    self._trigger(channel, event, payload, None)
+    let channels = vec![channel.to_string()];
+    self._trigger(channels, event, payload, None)
   }
 
   pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload, socket_id: &str) {
-    self._trigger(channel, event, payload, Some(socket_id.to_string()))
+    let channels = vec![channel.to_string()];
+    self._trigger(channels, event, payload, Some(socket_id.to_string()))
   }
 
-  fn _trigger<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload, socket_id: Option<String>) { 
+  pub fn trigger_multi<Payload : rustc_serialize::Encodable>(&self, channels: Vec<&str>, event: &str, payload: Payload) {
+    let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
+    self._trigger(channel_strings, event, payload, None)
+  }
+
+  pub fn trigger_multi_exclusive<Payload : rustc_serialize::Encodable>(&self, channels: Vec<&str>, event: &str, payload: Payload, socket_id: &str) {
+    let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
+    self._trigger(channel_strings, event, payload, Some(socket_id.to_string()))
+  }
+
+  fn _trigger<Payload : rustc_serialize::Encodable>(&self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) { 
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/events", self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
-
-    let channels = vec![channel.to_string()];
 
     let json_payload = json::encode(&payload).unwrap();
 

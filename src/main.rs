@@ -17,7 +17,9 @@ fn main() {
 
   // pusher.trigger("test_channel", "my_event", &hash_map);
 
-  pusher.trigger_exclusive("test_channel", "my_event", &hash_map, "45553.5500569");
+  let trigger_chans = vec!["test_channel", "test_channel2"];
+  pusher.trigger_multi(trigger_chans, "my_event", &hash_map);
+  // pusher.trigger_exclusive("test_channel", "my_event", &hash_map, "45553.5500569");
 
 
   pusher.channels(None);
