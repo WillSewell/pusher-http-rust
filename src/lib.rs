@@ -37,6 +37,8 @@ pub struct Pusher<'a> {
   secret: &'a str,
 }
 
+pub type QueryParameters<'a> = Option<Vec<(&'a str, &'a str)>>;
+
 impl <'a>Pusher<'a> {
 
   pub fn new(app_id: &'a str, key: &'a str, secret: &'a str) -> Pusher<'a> {
@@ -69,13 +71,15 @@ impl <'a>Pusher<'a> {
     send_request(method, request_url, Some(&body));
   }
 
-  pub fn channels(&self, params: Option<Vec<(&str, &str)>>){
+  pub fn channels(&self, params: QueryParameters){
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels", self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, self.key, self.secret, None, params);
     send_request(method, request_url, None);
   }
+
+  // pub fn channel(&self, channe_name: &str, params: )
 
 }
 
@@ -117,7 +121,7 @@ fn create_auth_signature<'a>(to_sign: &str, secret: &'a str) -> String {
   code.to_hex()
 }
 
-fn update_request_url(method: &str, request_url: &mut Url, key: &str, secret: &str, data: Option<&str>, query_parameters: Option<Vec<(&str, &str)>>) {
+fn update_request_url(method: &str, request_url: &mut Url, key: &str, secret: &str, data: Option<&str>, query_parameters: QueryParameters) {
 
   let mut auth_signature : String;
   let body_md5 : String;
