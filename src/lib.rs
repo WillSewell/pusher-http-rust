@@ -65,15 +65,15 @@ impl <'a>Pusher<'a> {
     let body = json::encode(&raw_body).unwrap();
 
     let method = "POST";
-    update_request_url(method, &mut request_url, self.key, self.secret, Some(&body));
+    update_request_url(method, &mut request_url, self.key, self.secret, Some(&body), None);
     send_request(method, request_url, Some(&body));
   }
 
-  pub fn channels(&self){
+  pub fn channels(&self, params: Option<Vec<(&str, &str)>>){
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels", self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
-    update_request_url(method, &mut request_url, self.key, self.secret, None);
+    update_request_url(method, &mut request_url, self.key, self.secret, None, params);
     send_request(method, request_url, None);
   }
 
@@ -117,7 +117,7 @@ fn create_auth_signature<'a>(to_sign: &str, secret: &'a str) -> String {
   code.to_hex()
 }
 
-fn update_request_url(method: &str, request_url: &mut Url, key: &str, secret: &str, data: Option<&str>) {
+fn update_request_url(method: &str, request_url: &mut Url, key: &str, secret: &str, data: Option<&str>, query_parameters: Option<Vec<(&str, &str)>>) {
 
   let mut auth_signature : String;
   let body_md5 : String;
@@ -135,6 +135,12 @@ fn update_request_url(method: &str, request_url: &mut Url, key: &str, secret: &s
   if let Some(body) = data {
     body_md5 = create_body_md5(body);
     query_pairs.push(("body_md5", &body_md5));
+  }
+
+  if let Some(params) = query_parameters {
+    for param in params {
+      query_pairs.push(param);
+    }
   }
 
 

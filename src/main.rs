@@ -17,6 +17,11 @@ fn main() {
 
   pusher.trigger("test_channel", "my_event", &hash_map);
 
-  pusher.channels();
+
+  pusher.channels(None);
+
+  let channels_params = vec![("filter_by_prefix", "presence-"), ("info", "user_count")];
+
+  pusher.channels(Some(channels_params));
 
 }
