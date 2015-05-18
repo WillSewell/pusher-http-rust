@@ -11,11 +11,13 @@ fn main() {
 
   let pusher = Pusher::new(app_id, key, secret);
 
-  // let mut hash_map = HashMap::new();
-  // hash_map.insert("message", "hello world");
+  let mut hash_map = HashMap::new();
+  hash_map.insert("message", "hello world");
 
 
   // pusher.trigger("test_channel", "my_event", &hash_map);
+
+  pusher.trigger_exclusive("test_channel", "my_event", &hash_map, "45553.5500569");
 
 
   pusher.channels(None);

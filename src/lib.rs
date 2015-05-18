@@ -26,6 +26,7 @@ struct TriggerEventData {
     name: String,
     channels: Vec<String>,
     data: String,
+    socket_id: Option<String>,
 }
 
 #[derive(RustcDecodable, Debug)]
@@ -70,7 +71,15 @@ impl <'a>Pusher<'a> {
     }
   }
 
-  pub fn trigger<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload) { 
+  pub fn trigger<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload) {
+    self._trigger(channel, event, payload, None)
+  }
+
+  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload, socket_id: &str) {
+    self._trigger(channel, event, payload, Some(socket_id.to_string()))
+  }
+
+  fn _trigger<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload, socket_id: Option<String>) { 
     let request_url_string = format!("http://api.pusherapp.com/apps/{}/events", self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
 
@@ -78,11 +87,11 @@ impl <'a>Pusher<'a> {
 
     let json_payload = json::encode(&payload).unwrap();
 
-
     let raw_body = TriggerEventData{
       name: event.to_string(),
       channels: channels,
       data: json_payload,
+      socket_id: socket_id,
     };
 
     let body = json::encode(&raw_body).unwrap();
