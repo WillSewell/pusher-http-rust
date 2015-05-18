@@ -28,4 +28,6 @@ fn main() {
 
   pusher.channel("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-hu9e5NecuNr", Some(channel_params));
 
+  pusher.channel_users("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-hu9e5NecuNr");
+
 }

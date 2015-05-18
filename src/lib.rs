@@ -87,6 +87,14 @@ impl <'a>Pusher<'a> {
     send_request(method, request_url, None);
   }
 
+  pub fn channel_users(&self, channel_name : &str) {
+    let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels/{}/users", self.app_id, channel_name);
+    let mut request_url = Url::parse(&request_url_string).unwrap();
+    let method = "GET";
+    update_request_url(method, &mut request_url, self.key, self.secret, None, None);
+    send_request(method, request_url, None);
+  }
+
 }
 
 fn send_request(method: &str, request_url: Url, data: Option<&str>) {
