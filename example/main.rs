@@ -8,10 +8,9 @@ extern crate pusher;
 
 use pusher::Pusher;
 
-use nickel::{Nickel, Request, Response, HttpRouter, MiddlewareResult, JsonBody, QueryString};
+use nickel::{Nickel, Request, Response, HttpRouter, MiddlewareResult};
 use std::collections::HashMap;
 use std::io::Read;
-use hyper::header::{Header, HeaderFormat};
 use std::path::Path;
 
 header! {
