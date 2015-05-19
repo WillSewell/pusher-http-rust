@@ -14,18 +14,18 @@
 
     var pusher = new Pusher('246b7265b58305557d2e');
 
-    var privateChannel = pusher.subscribe('private-channel');
+    // var privateChannel = pusher.subscribe('private-channel');
 
-    // var presenceChannel = pusher.subscribe('presence-test-channel');
+    var presenceChannel = pusher.subscribe('presence-test-channel');
 
-    // presenceChannel.bind('pusher:subscription_succeeded', function(members){
-    //   console.log("Subscribed to presence channel!");
-    //   console.log(members.me)
-    // });
+    presenceChannel.bind('pusher:subscription_succeeded', function(members){
+      console.log("Subscribed to presence channel!");
+      console.log(members.me)
+    });
 
     setTimeout(function(){
-        // presenceChannel.trigger('client-woot', {hello: 'world'})
-        privateChannel.trigger('client-yolo', {yolo: 'woot'})
+        presenceChannel.trigger('client-woot', {hello: 'world'})
+        // privateChannel.trigger('client-yolo', {yolo: 'woot'})
     }, 1000)
 
     // var exclusionChannel = pusher.subscribe("exclusion");

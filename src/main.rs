@@ -37,8 +37,13 @@ fn main() {
 
       let mut body = String::new();
       req.origin.read_to_string(&mut body).unwrap();
-      // println!("{:?}", body);
-      let auth = pusher.authenticate_private_channel(&body);
+
+      let mut member_data = HashMap::new();
+      member_data.insert("twitter", "jamiepatel");
+
+      let member = pusher::Member{user_id: "4", user_info: member_data};
+
+      let auth = pusher.authenticate_presence_channel(&body, &member);
       println!("{:?}", auth);
       res.send(auth)
     }

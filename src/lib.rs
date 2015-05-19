@@ -35,6 +35,13 @@ pub struct ChannelList {
     channels: HashMap<String, Channel>,
 }
 
+
+#[derive(RustcEncodable)]
+pub struct Member<'a> {
+  pub user_id: &'a str,
+  pub user_info: HashMap<&'a str, &'a str>
+}
+
 #[derive(RustcDecodable, Debug)]
 pub struct Channel {
   occupied: Option<bool>,
@@ -186,20 +193,36 @@ impl Pusher{
   }
 
   pub fn authenticate_private_channel(&self, body: &String) -> String {
+    self.authenticate_channel(body, None)
+  }
+
+  pub fn authenticate_presence_channel(&self, body: &String, member: &Member) -> String {
+    self.authenticate_channel(body, Some(member))
+  }
+
+  fn authenticate_channel(&self, body: &String, member: Option<&Member>) -> String {
 
     let object = parse(body);
 
     let auth : AuthParams = json::decode(&object.unwrap().to_string()).unwrap();
 
+    let mut auth_map = HashMap::new();
+
     let channel_name = auth.channel_name;
     let socket_id = auth.socket_id;
 
-    let to_sign = format!("{}:{}", socket_id, channel_name);
+    let mut to_sign = format!("{}:{}", socket_id, channel_name);
 
-    let auth_map = create_channel_auth(&self.key, &self.secret, &to_sign);
+    if let Some(presence_member) = member {
+      let json_member = json::encode(presence_member).unwrap();
+      to_sign = format!("{}:{}", to_sign, json_member);
+      auth_map.insert("channel_data", json_member);
+    }
 
+
+    create_channel_auth(&mut auth_map, &self.key, &self.secret, &to_sign);
+    println!("{:?}", auth_map);
     json::encode(&auth_map).unwrap()
-
   }
 
 
@@ -236,12 +259,10 @@ fn create_body_md5(body: &str) -> String {
   sh.result_str()
 }
 
-fn create_channel_auth<'a>(key: &str, secret: &str, to_sign: &str) -> HashMap<&'a str,String>{
+fn create_channel_auth<'a>(auth_map: &mut HashMap<&'a str,String>, key: &str, secret: &str, to_sign: &str){
   let auth_signature = create_auth_signature(to_sign, secret);
-  let mut auth_map = HashMap::new();
   let auth_string = format!("{}:{}", key, auth_signature);
   auth_map.insert("auth", auth_string);
-  auth_map
 }
 
 fn create_auth_signature<'a>(to_sign: &str, secret: &'a str) -> String {
