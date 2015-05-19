@@ -35,6 +35,5 @@ Limit event name length to 200 chars     | &#10008;
 
 * Better error handling (e.g. changing unwraps to pattern matches)
 * Clean up code (e.g. use of string types) and request repetition
-* Split into separate files
 * Tests
 

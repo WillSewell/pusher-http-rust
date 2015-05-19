@@ -49,7 +49,7 @@ pub struct ChannelUserList {
 }
 
 #[derive(RustcDecodable, Debug)]
-struct ChannelUser {
+pub struct ChannelUser {
   id: String,
 }
 

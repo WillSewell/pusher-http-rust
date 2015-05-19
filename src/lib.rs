@@ -9,4 +9,6 @@ mod signature;
 mod request;
 mod request_url;
 
+pub use self::client::{Pusher,PusherBuilder, Member, Webhook, Channel, ChannelUserList};
+
 pub type QueryParameters<'a> = Option<Vec<(&'a str, &'a str)>>;
