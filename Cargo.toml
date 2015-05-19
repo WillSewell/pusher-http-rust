@@ -8,6 +8,11 @@ hyper="0.5.0"
 rust-crypto = "0.2.31"
 rustc-serialize = "0.3"
 time = "0.1"
+rustful="0.1"
+plugin="*"
 
-[dependencies.url]
-git = "https://github.com/servo/rust-url"
+[dependencies.nickel]
+git = "https://github.com/nickel-org/nickel.rs.git"
+
+[dependencies.queryst]
+git = "https://github.com/rustless/queryst"

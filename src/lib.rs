@@ -1,8 +1,8 @@
 extern crate hyper;
-extern crate url;
 extern crate crypto;
 extern crate rustc_serialize;
 extern crate time;
+extern crate queryst;
 
 use std::io::Read;
 use hyper::Client;
@@ -11,6 +11,7 @@ use hyper::method::Method;
 use rustc_serialize::json;
 use hyper::Url;
 
+use queryst::parse;
 use std::collections::HashMap;
 
 use crypto::md5::Md5;
@@ -49,6 +50,12 @@ pub struct ChannelUserList {
 #[derive(RustcDecodable, Debug)]
 struct ChannelUser {
   id: String,
+}
+
+#[derive(RustcDecodable, Debug)]
+struct AuthParams {
+  channel_name: String,
+  socket_id: String,
 }
 
 const AUTH_VERSION : &'static str = "1.0";
@@ -145,7 +152,7 @@ impl Pusher{
 
     let method = "POST";
     update_request_url(method, &mut request_url, &self.key, &self.secret, Some(&body), None);
-    send_request(method, request_url, Some(&body));
+    send_request(method, request_url, Some(&body)); // TODO - return buffered events
   }
 
   pub fn channels(&self, params: QueryParameters) -> ChannelList{
@@ -177,6 +184,24 @@ impl Pusher{
     let decoded : ChannelUserList = json::decode(&encoded[..]).unwrap();
     decoded
   }
+
+  pub fn authenticate_private_channel(&self, body: &String) -> String {
+
+    let object = parse(body);
+
+    let auth : AuthParams = json::decode(&object.unwrap().to_string()).unwrap();
+
+    let channel_name = auth.channel_name;
+    let socket_id = auth.socket_id;
+
+    let to_sign = format!("{}:{}", socket_id, channel_name);
+
+    let auth_map = create_channel_auth(&self.key, &self.secret, &to_sign);
+
+    json::encode(&auth_map).unwrap()
+
+  }
+
 
 }
 
@@ -211,6 +236,14 @@ fn create_body_md5(body: &str) -> String {
   sh.result_str()
 }
 
+fn create_channel_auth<'a>(key: &str, secret: &str, to_sign: &str) -> HashMap<&'a str,String>{
+  let auth_signature = create_auth_signature(to_sign, secret);
+  let mut auth_map = HashMap::new();
+  let auth_string = format!("{}:{}", key, auth_signature);
+  auth_map.insert("auth", auth_string);
+  auth_map
+}
+
 fn create_auth_signature<'a>(to_sign: &str, secret: &'a str) -> String {
   let mut hmac = Hmac::new(Sha256::new(), secret.as_bytes());
   hmac.input(to_sign.as_bytes());
@@ -223,8 +256,6 @@ fn update_request_url(method: &str, request_url: &mut Url, key: &str, secret: &s
 
   let mut auth_signature : String;
   let body_md5 : String;
-
-
   let auth_timestamp = time::get_time().sec.to_string();
   let path = request_url.serialize_path().unwrap();
 

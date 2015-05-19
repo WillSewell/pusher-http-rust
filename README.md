@@ -5,7 +5,7 @@ Feature                                    | Supported
 Trigger event on single channel            | *&#10004;*
 Trigger event on multiple channels         | *&#10004;*
 Excluding recipients from events           | *&#10004;*
-Authenticating private channels            | *&#10008;*
+Authenticating private channels            | *&#10004;*
 Authenticating presence channels           | *&#10008;*
 Get the list of channels in an application | *&#10004;*
 Get the state of a single channel          | *&#10004;*
