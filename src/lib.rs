@@ -22,6 +22,8 @@ use crypto::sha2::Sha256;
 use rustc_serialize::hex::ToHex;
 use crypto::mac::Mac;
 
+use std::env;
+
 #[derive(RustcDecodable, RustcEncodable)]
 struct TriggerEventData {
     name: String,
@@ -122,6 +124,38 @@ impl Pusher{
     }
   }
 
+  pub fn from_env(key: &str) -> PusherBuilder {
+    let url_opt = env::var_os(key).unwrap();
+    let os_url = url_opt.to_str();
+    let url = os_url.unwrap();
+    Pusher::from_url(url)
+  }
+
+  pub fn from_url(url: &str) -> PusherBuilder {
+    let mut pusher_url = Url::parse(url).unwrap();
+    println!("{:?}", pusher_url);
+
+    let key = pusher_url.username().unwrap();
+    let secret = pusher_url.password().unwrap();
+    let host = pusher_url.host().unwrap();
+    let path = pusher_url.path().unwrap();
+    let app_id = &path[1];
+    let mut secure  = false;
+
+    if pusher_url.scheme == "https" {
+      secure = true;
+    }
+
+    PusherBuilder {
+      app_id: app_id.to_string(),
+      key: key.to_string(),
+      secret: secret.to_string(),
+      host: host.to_string(),
+      secure: secure,
+    }
+
+  }
+
   pub fn trigger<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload) {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, None)
@@ -201,16 +235,12 @@ impl Pusher{
   }
 
   fn authenticate_channel(&self, body: &String, member: Option<&Member>) -> String {
-
     let object = parse(body);
-
     let auth : AuthParams = json::decode(&object.unwrap().to_string()).unwrap();
 
     let mut auth_map = HashMap::new();
-
     let channel_name = auth.channel_name;
     let socket_id = auth.socket_id;
-
     let mut to_sign = format!("{}:{}", socket_id, channel_name);
 
     if let Some(presence_member) = member {
@@ -219,9 +249,7 @@ impl Pusher{
       auth_map.insert("channel_data", json_member);
     }
 
-
     create_channel_auth(&mut auth_map, &self.key, &self.secret, &to_sign);
-    println!("{:?}", auth_map);
     json::encode(&auth_map).unwrap()
   }
 

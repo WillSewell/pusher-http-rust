@@ -11,9 +11,9 @@ Get the list of channels in an application | *&#10004;*
 Get the state of a single channel          | *&#10004;*
 Get a list of users in a presence channel  | *&#10004;*
 WebHook validation                         | *&#10008;*
-Heroku add-on support              | *&#10008;*
+Heroku add-on support              | *&#10004;*
 Debugging & Logging                        | *&#10008;*
-Cluster configuration                      | *&#10008;*
+Cluster configuration                      | *&#10004;*
 Timeouts                                   | *&#10008;*
 HTTPS                                      | *&#10008;*
 HTTP Proxy configuration                   | *&#10008;*
