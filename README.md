@@ -1,3 +1,4 @@
+
 ## Feature Support
 
 Feature                                    | Supported
@@ -10,8 +11,8 @@ Authenticating presence channels           | *&#10004;*
 Get the list of channels in an application | *&#10004;*
 Get the state of a single channel          | *&#10004;*
 Get a list of users in a presence channel  | *&#10004;*
-WebHook validation                         | *&#10008;*
-Heroku add-on support              | *&#10004;*
+WebHook validation                         | *&#10004;*
+Heroku add-on support                      | *&#10004;*
 Debugging & Logging                        | *&#10008;*
 Cluster configuration                      | *&#10004;*
 Timeouts                                   | *&#10008;*
@@ -29,3 +30,11 @@ Helper Functionality                     | Supported
 Channel name validation            | &#10008;
 Limit to 10 channels per trigger         | &#10008;
 Limit event name length to 200 chars     | &#10008;
+
+## TODO
+
+* Better error handling (e.g. changing unwraps to pattern matches)
+* Clean up code (e.g. use of string types) and request repetition
+* Split into separate files
+* Tests
+

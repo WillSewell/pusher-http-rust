@@ -19,12 +19,12 @@ use crypto::digest::Digest;
 use crypto::hmac::Hmac;
 use crypto::sha2::Sha256;
 
-use rustc_serialize::hex::ToHex;
-use crypto::mac::Mac;
+use rustc_serialize::hex::{ToHex, FromHex};
+use crypto::mac::{Mac, MacResult};
 
 use std::env;
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(RustcEncodable)]
 struct TriggerEventData {
     name: String,
     channels: Vec<String>,
@@ -42,6 +42,12 @@ pub struct ChannelList {
 pub struct Member<'a> {
   pub user_id: &'a str,
   pub user_info: HashMap<&'a str, &'a str>
+}
+
+#[derive(RustcDecodable, Debug)]
+pub struct Webhook {
+  time_ms: i64,
+  events: Vec<HashMap<String, String>>,
 }
 
 #[derive(RustcDecodable, Debug)]
@@ -207,7 +213,7 @@ impl Pusher{
   }
 
   fn scheme(&self) -> &str {
-    if self.secure == true {
+    if self.secure {
       "https"
     } else {
       "http"
@@ -261,8 +267,18 @@ impl Pusher{
     json::encode(&auth_map).unwrap()
   }
 
+  pub fn webhook(&self, key: &String, signature: &String, body: &str) -> Result<Webhook, &str> {
+    if (&self.key == key) && check_signature(signature, &self.secret, body) {
+      println!("Checks out");
+      println!("{:?}", body);
+      let decoded_webhook : Webhook = json::decode(&body[..]).unwrap();
+      return Ok(decoded_webhook)
+    }
+    Err("Invalid webhook")
+  }
 
 }
+
 
 fn send_request(method: &str, request_url: Url, data: Option<&str>) -> String {
     let mut client = Client::new();
@@ -299,6 +315,17 @@ fn create_channel_auth<'a>(auth_map: &mut HashMap<&'a str,String>, key: &str, se
   let auth_signature = create_auth_signature(to_sign, secret);
   let auth_string = format!("{}:{}", key, auth_signature);
   auth_map.insert("auth", auth_string);
+}
+
+fn check_signature(signature: &str, secret: &str, body: &str) -> bool {
+  let mut expected_hmac = Hmac::new(Sha256::new(), secret.as_bytes());
+  expected_hmac.input(body.as_bytes());
+
+  let decoded_signature = signature.from_hex().unwrap();
+
+  let result = MacResult::new(&decoded_signature);
+
+  result.eq(&expected_hmac.result())
 }
 
 fn create_auth_signature<'a>(to_sign: &str, secret: &'a str) -> String {
