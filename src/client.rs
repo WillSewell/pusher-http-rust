@@ -8,56 +8,8 @@ use std::env;
 use super::signature::*;
 use super::request::*;
 use super::request_url::*;
+use super::json_structures::*;
 use super::QueryParameters;
-
-#[derive(RustcEncodable)]
-struct TriggerEventData {
-    name: String,
-    channels: Vec<String>,
-    data: String,
-    socket_id: Option<String>,
-}
-
-#[derive(RustcDecodable, Debug)]
-pub struct ChannelList {
-    channels: HashMap<String, Channel>,
-}
-
-
-#[derive(RustcEncodable)]
-pub struct Member<'a> {
-  pub user_id: &'a str,
-  pub user_info: HashMap<&'a str, &'a str>
-}
-
-#[derive(RustcDecodable, Debug)]
-pub struct Webhook {
-  time_ms: i64,
-  events: Vec<HashMap<String, String>>,
-}
-
-#[derive(RustcDecodable, Debug)]
-pub struct Channel {
-  occupied: Option<bool>,
-  user_count: Option<i32>,
-  subscription_count: Option<i32>,
-}
-
-#[derive(RustcDecodable, Debug)]
-pub struct ChannelUserList {
-  users: Vec<ChannelUser>,
-}
-
-#[derive(RustcDecodable, Debug)]
-pub struct ChannelUser {
-  id: String,
-}
-
-#[derive(RustcDecodable, Debug)]
-struct AuthParams {
-  channel_name: String,
-  socket_id: String,
-}
 
 #[derive(Debug)]
 pub struct Pusher {

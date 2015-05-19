@@ -2,7 +2,7 @@ use crypto::md5::Md5;
 use crypto::digest::Digest;
 use crypto::hmac::Hmac;
 use crypto::sha2::Sha256;
-use rustc_serialize::hex::{self, ToHex, FromHex};
+use rustc_serialize::hex::{ToHex, FromHex};
 use crypto::mac::{Mac, MacResult};
 use std::collections::HashMap;
 
