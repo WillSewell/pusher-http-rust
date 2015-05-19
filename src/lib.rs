@@ -177,7 +177,7 @@ impl Pusher{
   }
 
   fn _trigger<Payload : rustc_serialize::Encodable>(&self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) { 
-    let request_url_string = format!("http://api.pusherapp.com/apps/{}/events", self.app_id);
+    let request_url_string = format!("{}://{}/apps/{}/events", self.scheme(), self.host, self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
 
     let json_payload = json::encode(&payload).unwrap();
@@ -197,7 +197,7 @@ impl Pusher{
   }
 
   pub fn channels(&self, params: QueryParameters) -> ChannelList{
-    let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels", self.app_id);
+    let request_url_string = format!("{}://{}/apps/{}/channels", self.scheme(), self.host, self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, &self.key, &self.secret, None, params);
@@ -206,8 +206,16 @@ impl Pusher{
     decoded
   }
 
+  fn scheme(&self) -> &str {
+    if self.secure == true {
+      "https"
+    } else {
+      "http"
+    }
+  }
+
   pub fn channel(&self, channel_name: &str, params: QueryParameters) -> Channel{
-    let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels/{}", self.app_id, channel_name);
+    let request_url_string = format!("{}://{}/apps/{}/channels/{}", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, &self.key, &self.secret, None, params);
@@ -217,7 +225,7 @@ impl Pusher{
   }
 
   pub fn channel_users(&self, channel_name : &str) -> ChannelUserList {
-    let request_url_string = format!("http://api.pusherapp.com/apps/{}/channels/{}/users", self.app_id, channel_name);
+    let request_url_string = format!("{}://{}/apps/{}/channels/{}/users", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, &self.key, &self.secret, None, None);

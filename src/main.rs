@@ -117,19 +117,17 @@ fn main() {
   let key = env!("RUST_KEY");
   let secret = env!("RUST_SECRET");
 
-  let pusher = Pusher::from_env("PUSHER_RETHINK_URLF");
-  println!("{:?}", pusher);
 
-  // let pusher = Pusher::new(app_id, key, secret)
-  //                     .finalize();
+  let pusher = Pusher::new(app_id, key, secret)
+                      .finalize();
 
-  // println!("{:?}", pusher);  
+  println!("{:?}", pusher);  
 
-  // let mut hash_map = HashMap::new();
-  // hash_map.insert("message", "hello world");
+  let mut hash_map = HashMap::new();
+  hash_map.insert("message", "hello world");
 
 
-  // pusher.trigger("test_channel", "my_event", &hash_map);
+  pusher.trigger("test_channel", "my_event", &hash_map);
 
   // let trigger_chans = vec!["test_channel", "test_channel2"];
   // pusher.trigger_multi(trigger_chans, "my_event", &hash_map);
