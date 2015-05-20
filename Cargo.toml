@@ -10,6 +10,7 @@ rustc-serialize = "0.3"
 time = "0.1"
 rustful="0.1"
 plugin="*"
+regex = "0.1.8"
 
 [dependencies.nickel]
 git = "https://github.com/nickel-org/nickel.rs.git"

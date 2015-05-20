@@ -4,6 +4,7 @@ use queryst::parse;
 use std::collections::HashMap;
 
 use std::env;
+use regex::Regex;
 
 use super::signature::*;
 use super::request::*;
@@ -204,6 +205,13 @@ impl Pusher{
     let mut auth_map = HashMap::new();
     let channel_name = auth.channel_name;
     let socket_id = auth.socket_id;
+
+    let socket_id_regex = Regex::new(r"\A\d+\.\d+\z").unwrap(); // how to make this global?
+
+    if !socket_id_regex.is_match(&socket_id) {
+      return Err("Invalid socket_id")
+    }
+
     let mut to_sign = format!("{}:{}", socket_id, channel_name);
 
     if let Some(presence_member) = member {
@@ -251,6 +259,22 @@ fn test_presence_channel_authentication(){
   
   assert_eq!(result_decoded["auth"], expected_encoded["auth"]);
   assert_eq!(result_decoded["channel_data"], expected_encoded["channel_data"]);
+}
 
+#[test]
+fn test_socket_id_validation(){
+  let mut pusher = Pusher::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
+  let body = "channel_name=private-foobar&socket_id=12341234".to_string();
+  let result = pusher.authenticate_private_channel(&body);
+  assert_eq!(result.unwrap_err(), "Invalid socket_id")
+}
+
+#[test]
+fn test_client_webhook_validation(){
+  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let key = "key".to_string();
+  let signature = "05a115b7898e4956cf46df2dd2822b3b913a4255343acd82d31609f222765c6a".to_string();
+  let result = pusher.webhook(&key, &signature, "{\"time_ms\":1327078148132,\"events\":[{\"name\":\"event_name\",\"some\":\"data\"}]}");
+  assert_eq!(result.is_ok(), true)
 }
 
