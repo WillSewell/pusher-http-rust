@@ -140,9 +140,7 @@ impl Pusher{
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, &self.key, &self.secret, None, params);
-    let encoded = send_request(method, request_url, None);
-    let decoded : ChannelList = json::decode(&encoded[..]).unwrap();
-    decoded
+    create_request::<ChannelList>(method, request_url, None)
   }
 
   fn scheme(&self) -> &str {
@@ -158,9 +156,7 @@ impl Pusher{
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, &self.key, &self.secret, None, params);
-    let encoded = send_request(method, request_url, None);
-    let decoded : Channel = json::decode(&encoded[..]).unwrap();
-    decoded
+    create_request::<Channel>(method, request_url, None)
   }
 
   pub fn channel_users(&self, channel_name : &str) -> ChannelUserList {
@@ -168,9 +164,7 @@ impl Pusher{
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, &self.key, &self.secret, None, None);
-    let encoded = send_request(method, request_url, None);
-    let decoded : ChannelUserList = json::decode(&encoded[..]).unwrap();
-    decoded
+    create_request::<ChannelUserList>(method, request_url, None)
   }
 
   pub fn authenticate_private_channel(&self, body: &String) -> String {
@@ -211,3 +205,10 @@ impl Pusher{
   }
 
 }
+
+fn create_request<T : rustc_serialize::Decodable>(method: &str, request_url: Url, data: Option<&str>) -> T {
+  let encoded = send_request(method, request_url, data);
+  let decoded : T = json::decode(&encoded[..]).unwrap();
+  decoded
+}
+
