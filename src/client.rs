@@ -180,17 +180,26 @@ impl Pusher{
     create_request::<ChannelUserList>(&mut self.http_client, method, request_url, None)
   }
 
-  pub fn authenticate_private_channel(&self, body: &String) -> String {
+  pub fn authenticate_private_channel(&self, body: &String) -> Result<String, &str> {
     self.authenticate_channel(body, None)
   }
 
-  pub fn authenticate_presence_channel(&self, body: &String, member: &Member) -> String {
+  pub fn authenticate_presence_channel(&self, body: &String, member: &Member) -> Result<String, &str> {
     self.authenticate_channel(body, Some(member))
   }
 
-  fn authenticate_channel(&self, body: &String, member: Option<&Member>) -> String {
+  fn authenticate_channel(&self, body: &String, member: Option<&Member>) -> Result<String, &str> {
     let object = parse(body);
-    let auth : AuthParams = json::decode(&object.unwrap().to_string()).unwrap();
+    
+    let json_params = match object {
+      Ok(parsed_params) => parsed_params.to_string(),
+      Err(_) => return Err("Could not parse body") 
+    };
+
+    let auth : AuthParams = match json::decode(&json_params) {
+      Ok(parsed_auth) => parsed_auth,
+      Err(_) => return Err("Could not parse body")
+    };
 
     let mut auth_map = HashMap::new();
     let channel_name = auth.channel_name;
@@ -204,7 +213,7 @@ impl Pusher{
     }
 
     create_channel_auth(&mut auth_map, &self.key, &self.secret, &to_sign);
-    json::encode(&auth_map).unwrap()
+    Ok(json::encode(&auth_map).unwrap())
   }
 
   pub fn webhook(&self, key: &String, signature: &String, body: &str) -> Result<Webhook, &str> {
@@ -218,3 +227,30 @@ impl Pusher{
   }
 
 }
+
+#[test]
+fn test_private_channel_authentication(){
+  let mut pusher = Pusher::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
+  let expected = "{\"auth\":\"278d425bdf160c739803:58df8b0c36d6982b82c3ecf6b4662e34fe8c25bba48f5369f135bf843651c3a4\"}".to_string();
+  let body = "channel_name=private-foobar&socket_id=1234.1234".to_string();
+  let result = pusher.authenticate_private_channel(&body);
+  assert_eq!(result.unwrap(), expected)
+}
+
+#[test]
+fn test_presence_channel_authentication(){
+  let mut pusher = Pusher::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
+  let expected = "{\"auth\":\"278d425bdf160c739803:48dac51d2d7569e1e9c0f48c227d4b26f238fa68e5c0bb04222c966909c4f7c4\",\"channel_data\":\"{\\\"user_id\\\":\\\"10\\\",\\\"user_info\\\":{\\\"name\\\":\\\"Mr. Pusher\\\"}}\"}";
+  let expected_encoded : HashMap<String, String> = json::decode(expected).unwrap(); 
+  let mut member_data = HashMap::new();
+  member_data.insert("name", "Mr. Pusher");
+  let presence_data = Member{user_id: "10", user_info: member_data};
+  let body = "channel_name=presence-foobar&socket_id=1234.1234".to_string();
+  let result_json = pusher.authenticate_presence_channel(&body, &presence_data);
+  let result_decoded : HashMap<String, String> = json::decode(&result_json.unwrap()).unwrap();
+  
+  assert_eq!(result_decoded["auth"], expected_encoded["auth"]);
+  assert_eq!(result_decoded["channel_data"], expected_encoded["channel_data"]);
+
+}
+
