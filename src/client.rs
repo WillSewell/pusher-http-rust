@@ -144,7 +144,7 @@ impl Pusher{
     let body = json::encode(&raw_body).unwrap();
 
     let method = "POST";
-    update_request_url(method, &mut request_url, &self.key, &self.secret, Some(&body), None);
+    update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), Some(&body), None);
     send_request(&mut self.http_client, method, request_url, Some(&body)) // TODO - return buffered events
   }
 
@@ -152,7 +152,7 @@ impl Pusher{
     let request_url_string = format!("{}://{}/apps/{}/channels", self.scheme(), self.host, self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
-    update_request_url(method, &mut request_url, &self.key, &self.secret, None, params);
+    update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), None, params);
     create_request::<ChannelList>(&mut self.http_client, method, request_url, None)
   }
 
@@ -168,7 +168,7 @@ impl Pusher{
     let request_url_string = format!("{}://{}/apps/{}/channels/{}", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
-    update_request_url(method, &mut request_url, &self.key, &self.secret, None, params);
+    update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), None, params);
     create_request::<Channel>(&mut self.http_client, method, request_url, None)
   }
 
@@ -176,7 +176,7 @@ impl Pusher{
     let request_url_string = format!("{}://{}/apps/{}/channels/{}/users", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
-    update_request_url(method, &mut request_url, &self.key, &self.secret, None, None);
+    update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), None, None);
     create_request::<ChannelUserList>(&mut self.http_client, method, request_url, None)
   }
 
