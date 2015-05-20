@@ -278,3 +278,18 @@ fn test_client_webhook_validation(){
   assert_eq!(result.is_ok(), true)
 }
 
+#[test]
+fn test_webhook_improper_key_case(){
+  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let key = "narr you're going down!".to_string();
+  let signature = "2677ad3e7c090b2fa2c0fb13020d66d5420879b8316eb356a2d60fb9073bc778".to_string();
+  let result = pusher.webhook(&key, &signature,"{\"hello\":\"world\"}");
+  assert_eq!(result.unwrap_err(), "Invalid webhook")
+}
+fn test_webhook_improper_signature_case(){
+  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let key = "key".to_string();
+  let signature = "2677ad3e7c090i'mgonnagetyaeb356a2d60fb9073bc778".to_string();
+  let result = pusher.webhook(&key, &signature,"{\"hello\":\"world\"}");
+  assert_eq!(result.unwrap_err(), "Invalid webhook")
+}
