@@ -1,5 +1,5 @@
 use rustc_serialize::{self, json};
-use hyper::Url;
+use hyper::{Url, Client};
 use queryst::parse;
 use std::collections::HashMap;
 
@@ -11,57 +11,67 @@ use super::request_url::*;
 use super::json_structures::*;
 use super::QueryParameters;
 
-#[derive(Debug)]
-pub struct Pusher {
+pub struct Pusher<'a> {
   app_id: String,
   key: String,
   secret: String, 
   host: String,
   secure: bool,
+  http_client: &'a mut Client,
 }
 
-#[derive(Debug)]
-pub struct PusherBuilder {
+pub struct PusherBuilder<'a> {
   app_id: String,
   key: String,
   secret: String, 
   host: String,
   secure: bool,
+  http_client: &'a mut Client,
 }
 
-impl PusherBuilder {
-  pub fn host(mut self, host: &str) -> PusherBuilder {
+impl <'a>PusherBuilder<'a> {
+  pub fn host(mut self, host: &str) -> PusherBuilder<'a> {
     self.host = host.to_string();
     self
   }
 
-  pub fn secure(mut self, secure: bool) -> PusherBuilder {  
+  pub fn secure(mut self, secure: bool) -> PusherBuilder<'a> {  
     self.secure = secure;
     self
   }
 
-  pub fn finalize(self) -> Pusher {
+  pub fn client(mut self, http_client: &'a mut Client) -> PusherBuilder<'a> {
+    self.http_client = http_client;
+    self
+  }
+
+  pub fn finalize(self) -> Pusher<'a> {
    Pusher {
       app_id: self.app_id,
       key: self.key,
       secret: self.secret,
       host: self.host,
       secure: self.secure,
+      http_client: self.http_client,
     } 
   }
 
 }
 
-impl Pusher{
+impl <'a>Pusher<'a>{
 
   pub fn new(app_id: &str, key: &str, secret: &str) -> PusherBuilder {
+    let mut http_client = Client::new();
+
     PusherBuilder {
       app_id: app_id.to_string(),
       key: key.to_string(),
       secret: secret.to_string(),
       host: "api.pusherapp.com".to_string(),
       secure: false,
+      http_client: &mut http_client,
     }
+
   }
 
   pub fn from_env(key: &str) -> PusherBuilder {
@@ -85,12 +95,15 @@ impl Pusher{
       secure = true;
     }
 
+    let mut http_client = Client::new();
+
     PusherBuilder {
       app_id: app_id.to_string(),
       key: key.to_string(),
       secret: secret.to_string(),
       host: host.to_string(),
       secure: secure,
+      http_client: &mut http_client,
     }
 
   }
@@ -132,7 +145,7 @@ impl Pusher{
 
     let method = "POST";
     update_request_url(method, &mut request_url, &self.key, &self.secret, Some(&body), None);
-    send_request(method, request_url, Some(&body)); // TODO - return buffered events
+    send_request(&mut self.http_client, method, request_url, Some(&body)); // TODO - return buffered events
   }
 
   pub fn channels(&self, params: QueryParameters) -> ChannelList{
@@ -140,7 +153,7 @@ impl Pusher{
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, &self.key, &self.secret, None, params);
-    create_request::<ChannelList>(method, request_url, None)
+    create_request::<ChannelList>(&mut self.http_client, method, request_url, None)
   }
 
   fn scheme(&self) -> &str {
@@ -156,7 +169,7 @@ impl Pusher{
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, &self.key, &self.secret, None, params);
-    create_request::<Channel>(method, request_url, None)
+    create_request::<Channel>(&mut self.http_client, method, request_url, None)
   }
 
   pub fn channel_users(&self, channel_name : &str) -> ChannelUserList {
@@ -164,7 +177,7 @@ impl Pusher{
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, &self.key, &self.secret, None, None);
-    create_request::<ChannelUserList>(method, request_url, None)
+    create_request::<ChannelUserList>(&mut self.http_client, method, request_url, None)
   }
 
   pub fn authenticate_private_channel(&self, body: &String) -> String {
