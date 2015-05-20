@@ -11,41 +11,41 @@ use super::request_url::*;
 use super::json_structures::*;
 use super::QueryParameters;
 
-pub struct Pusher<'a> {
+pub struct Pusher {
   app_id: String,
   key: String,
   secret: String, 
   host: String,
   secure: bool,
-  http_client: &'a mut Client,
+  http_client: Client,
 }
 
-pub struct PusherBuilder<'a> {
+pub struct PusherBuilder {
   app_id: String,
   key: String,
   secret: String, 
   host: String,
   secure: bool,
-  http_client: &'a mut Client,
+  http_client: Client,
 }
 
-impl <'a>PusherBuilder<'a> {
-  pub fn host(mut self, host: &str) -> PusherBuilder<'a> {
+impl PusherBuilder{
+  pub fn host(mut self, host: &str) -> PusherBuilder{
     self.host = host.to_string();
     self
   }
 
-  pub fn secure(mut self, secure: bool) -> PusherBuilder<'a> {  
+  pub fn secure(mut self, secure: bool) -> PusherBuilder {  
     self.secure = secure;
     self
   }
 
-  pub fn client(mut self, http_client: &'a mut Client) -> PusherBuilder<'a> {
+  pub fn client(mut self, http_client: Client) -> PusherBuilder {
     self.http_client = http_client;
     self
   }
 
-  pub fn finalize(self) -> Pusher<'a> {
+  pub fn finalize(self) -> Pusher {
    Pusher {
       app_id: self.app_id,
       key: self.key,
@@ -58,7 +58,7 @@ impl <'a>PusherBuilder<'a> {
 
 }
 
-impl <'a>Pusher<'a>{
+impl Pusher{
 
   pub fn new(app_id: &str, key: &str, secret: &str) -> PusherBuilder {
     let mut http_client = Client::new();
@@ -69,7 +69,7 @@ impl <'a>Pusher<'a>{
       secret: secret.to_string(),
       host: "api.pusherapp.com".to_string(),
       secure: false,
-      http_client: &mut http_client,
+      http_client: http_client,
     }
 
   }
@@ -103,32 +103,32 @@ impl <'a>Pusher<'a>{
       secret: secret.to_string(),
       host: host.to_string(),
       secure: secure,
-      http_client: &mut http_client,
+      http_client: http_client,
     }
 
   }
 
-  pub fn trigger<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload) {
+  pub fn trigger<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload) {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, None)
   }
 
-  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload, socket_id: &str) {
+  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload, socket_id: &str) {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, Some(socket_id.to_string()))
   }
 
-  pub fn trigger_multi<Payload : rustc_serialize::Encodable>(&self, channels: Vec<&str>, event: &str, payload: Payload) {
+  pub fn trigger_multi<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<&str>, event: &str, payload: Payload) {
     let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
     self._trigger(channel_strings, event, payload, None)
   }
 
-  pub fn trigger_multi_exclusive<Payload : rustc_serialize::Encodable>(&self, channels: Vec<&str>, event: &str, payload: Payload, socket_id: &str) {
+  pub fn trigger_multi_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<&str>, event: &str, payload: Payload, socket_id: &str) {
     let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
     self._trigger(channel_strings, event, payload, Some(socket_id.to_string()))
   }
 
-  fn _trigger<Payload : rustc_serialize::Encodable>(&self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) { 
+  fn _trigger<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) { 
     let request_url_string = format!("{}://{}/apps/{}/events", self.scheme(), self.host, self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
 
@@ -148,7 +148,7 @@ impl <'a>Pusher<'a>{
     send_request(&mut self.http_client, method, request_url, Some(&body)); // TODO - return buffered events
   }
 
-  pub fn channels(&self, params: QueryParameters) -> ChannelList{
+  pub fn channels(&mut self, params: QueryParameters) -> ChannelList{
     let request_url_string = format!("{}://{}/apps/{}/channels", self.scheme(), self.host, self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
@@ -164,7 +164,7 @@ impl <'a>Pusher<'a>{
     }
   }
 
-  pub fn channel(&self, channel_name: &str, params: QueryParameters) -> Channel{
+  pub fn channel(&mut self, channel_name: &str, params: QueryParameters) -> Channel{
     let request_url_string = format!("{}://{}/apps/{}/channels/{}", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
@@ -172,7 +172,7 @@ impl <'a>Pusher<'a>{
     create_request::<Channel>(&mut self.http_client, method, request_url, None)
   }
 
-  pub fn channel_users(&self, channel_name : &str) -> ChannelUserList {
+  pub fn channel_users(&mut self, channel_name : &str) -> ChannelUserList {
     let request_url_string = format!("{}://{}/apps/{}/channels/{}/users", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";

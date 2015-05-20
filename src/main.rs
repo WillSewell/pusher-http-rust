@@ -129,10 +129,10 @@ fn main() {
   let secret = env!("RUST_SECRET");
 
 
-  let pusher = Pusher::new(app_id, key, secret)
+  let mut pusher = Pusher::new(app_id, key, secret)
                       .finalize();
 
-  println!("{:?}", pusher);  
+  // println!("{:?}", pusher);  
 
   let mut hash_map = HashMap::new();
   hash_map.insert("message", "hello world");

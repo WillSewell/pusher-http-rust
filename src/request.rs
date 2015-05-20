@@ -7,7 +7,7 @@ use rustc_serialize::{self, json};
 use std::io::Read;
 
 pub fn create_request<T : rustc_serialize::Decodable>(client: &mut Client, method: &str, request_url: Url, data: Option<&str>) -> T {
-  let encoded = send_request(&mut client, method, request_url, data);
+  let encoded = send_request(client, method, request_url, data);
   let decoded : T = json::decode(&encoded[..]).unwrap();
   decoded
 }
