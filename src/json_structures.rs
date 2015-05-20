@@ -10,7 +10,7 @@ pub struct TriggerEventData {
 
 #[derive(RustcDecodable, Debug)]
 pub struct ChannelList {
-    pub channels: HashMap<String, Channel>,
+    pub channels: HashMap<String, Channel>, // something fishy in practice
 }
 
 #[derive(RustcEncodable)]

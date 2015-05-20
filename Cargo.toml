@@ -16,3 +16,7 @@ git = "https://github.com/nickel-org/nickel.rs.git"
 
 [dependencies.queryst]
 git = "https://github.com/rustless/queryst"
+
+[dev-dependencies]
+yup-hyper-mock = "*"
+log = "*"  # log macros are used within yup-hyper-mock

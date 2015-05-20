@@ -3,6 +3,7 @@ name = "pusher"
 version = "0.1.0"
 dependencies = [
  "hyper 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nickel 0.4.0 (git+https://github.com/nickel-org/nickel.rs.git)",
  "plugin 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "queryst 0.1.15 (git+https://github.com/rustless/queryst)",
@@ -10,6 +11,7 @@ dependencies = [
  "rustc-serialize 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustful 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.25 (registry+https://github.com/rust-lang/crates.io-index)",
+ "yup-hyper-mock 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -310,5 +312,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "matches 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "yup-hyper-mock"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "hyper 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
