@@ -205,10 +205,3 @@ impl Pusher{
   }
 
 }
-
-fn create_request<T : rustc_serialize::Decodable>(method: &str, request_url: Url, data: Option<&str>) -> T {
-  let encoded = send_request(method, request_url, data);
-  let decoded : T = json::decode(&encoded[..]).unwrap();
-  decoded
-}
-
