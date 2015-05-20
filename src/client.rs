@@ -275,7 +275,11 @@ fn test_client_webhook_validation(){
   let key = "key".to_string();
   let signature = "05a115b7898e4956cf46df2dd2822b3b913a4255343acd82d31609f222765c6a".to_string();
   let result = pusher.webhook(&key, &signature, "{\"time_ms\":1327078148132,\"events\":[{\"name\":\"event_name\",\"some\":\"data\"}]}");
-  assert_eq!(result.is_ok(), true)
+
+  let webhook = result.unwrap();
+  assert_eq!(webhook.time_ms, 1327078148132);
+  assert_eq!(webhook.events[0]["name"], "event_name");
+  assert_eq!(webhook.events[0]["some"], "data")
 }
 
 #[test]
@@ -286,10 +290,12 @@ fn test_webhook_improper_key_case(){
   let result = pusher.webhook(&key, &signature,"{\"hello\":\"world\"}");
   assert_eq!(result.unwrap_err(), "Invalid webhook")
 }
+
+#[test]
 fn test_webhook_improper_signature_case(){
   let mut pusher = Pusher::new("id", "key", "secret").finalize();
   let key = "key".to_string();
-  let signature = "2677ad3e7c090i'mgonnagetyaeb356a2d60fb9073bc778".to_string();
+  let signature = "26c778".to_string();
   let result = pusher.webhook(&key, &signature,"{\"hello\":\"world\"}");
   assert_eq!(result.unwrap_err(), "Invalid webhook")
 }
