@@ -141,7 +141,7 @@ fn main() {
   pusher.trigger("test_channel", "my_event", &hash_map);
 
   let trigger_chans = vec!["test_channel", "test_channel2"];
-  pusher.trigger_multi(trigger_chans, "my_event", &hash_map);
+  pusher.trigger_multi(&trigger_chans, "my_event", &hash_map);
 
 
   pusher.channels(None);

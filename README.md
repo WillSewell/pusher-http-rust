@@ -27,8 +27,8 @@ These are helpers that have been implemented to to ensure interactions with the 
 
 Helper Functionality                     | Supported
 -----------------------------------------| :-------:
-Channel name validation            | &#10008;
-Limit to 10 channels per trigger         | &#10008;
+Channel name validation            | &#10004;
+Limit to 10 channels per trigger         | &#10004;
 Limit event name length to 200 chars     | &#10008;
 
 ## TODO

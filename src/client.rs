@@ -11,6 +11,7 @@ use super::request::*;
 use super::request_url::*;
 use super::json_structures::*;
 use super::QueryParameters;
+use super::util::*;
 
 pub struct Pusher {
   app_id: String,
@@ -109,27 +110,32 @@ impl Pusher{
 
   }
 
-  pub fn trigger<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload)-> String {
+  pub fn trigger<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload)-> Result<String, &str> {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, None)
   }
 
-  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload, socket_id: &str)-> String {
+  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload, socket_id: &str)-> Result<String, &str> {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, Some(socket_id.to_string()))
   }
 
-  pub fn trigger_multi<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<&str>, event: &str, payload: Payload)-> String {
+  pub fn trigger_multi<Payload : rustc_serialize::Encodable>(&mut self, channels: &Vec<&str>, event: &str, payload: Payload)-> Result<String, &str> {
     let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
     self._trigger(channel_strings, event, payload, None)
   }
 
-  pub fn trigger_multi_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<&str>, event: &str, payload: Payload, socket_id: &str)-> String {
+  pub fn trigger_multi_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<&str>, event: &str, payload: Payload, socket_id: &str)-> Result<String, &str> {
     let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
     self._trigger(channel_strings, event, payload, Some(socket_id.to_string()))
   }
 
-  fn _trigger<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) -> String { 
+  fn _trigger<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) -> Result<String, &str> { 
+    
+    if let Err(message) = validate_channels(&channels) {
+      return Err(message)
+    }
+
     let request_url_string = format!("{}://{}/apps/{}/events", self.scheme(), self.host, self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
 
@@ -146,7 +152,8 @@ impl Pusher{
 
     let method = "POST";
     update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), Some(&body), None);
-    send_request(&mut self.http_client, method, request_url, Some(&body)) // TODO - return buffered events
+    let response = send_request(&mut self.http_client, method, request_url, Some(&body)); // TODO - return buffered events
+    Ok(response)
   }
 
   pub fn channels(&mut self, params: QueryParameters) -> ChannelList{
@@ -299,3 +306,37 @@ fn test_webhook_improper_signature_case(){
   let result = pusher.webhook(&key, &signature,"{\"hello\":\"world\"}");
   assert_eq!(result.unwrap_err(), "Invalid webhook")
 }
+
+#[test]
+fn test_channel_number_validation(){
+  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let channels = vec!["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"];
+  let res = pusher.trigger_multi(&channels, "yolo", "woot");
+  assert_eq!(res.unwrap_err(), "Cannot trigger on more than 10 channels")
+}
+
+#[test]
+fn test_channel_format_validation(){
+  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let res = pusher.trigger("w000^$$£@@@", "yolo", "woot");
+  assert_eq!(res.unwrap_err(), "Channels must be formatted as such: ^[-a-zA-Z0-9_=@,.;]+$")
+}
+
+#[test]
+fn test_channel_length_validation(){
+  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let mut channel = "".to_string();
+
+  for i in 1..202 {
+    channel = channel + "a"
+  }
+
+  let res = pusher.trigger(&channel, "yolo", "woot");
+  assert_eq!(res.unwrap_err(), "Channel names must be under 200 characters")
+}
+
+
+
+
+
+
