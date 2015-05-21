@@ -63,7 +63,7 @@ impl PusherBuilder{
 impl Pusher{
 
   pub fn new(app_id: &str, key: &str, secret: &str) -> PusherBuilder {
-    let mut http_client = Client::new();
+    let http_client = Client::new();
 
     PusherBuilder {
       app_id: app_id.to_string(),
@@ -97,7 +97,7 @@ impl Pusher{
       secure = true;
     }
 
-    let mut http_client = Client::new();
+    let http_client = Client::new();
 
     PusherBuilder {
       app_id: app_id.to_string(),
@@ -110,30 +110,30 @@ impl Pusher{
 
   }
 
-  pub fn trigger<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload)-> Result<String, &str> {
+  pub fn trigger<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload)-> Result<String, String> {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, None)
   }
 
-  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload, socket_id: &str)-> Result<String, &str> {
+  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload, socket_id: &str)-> Result<String, String> {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, Some(socket_id.to_string()))
   }
 
-  pub fn trigger_multi<Payload : rustc_serialize::Encodable>(&mut self, channels: &Vec<&str>, event: &str, payload: Payload)-> Result<String, &str> {
+  pub fn trigger_multi<Payload : rustc_serialize::Encodable>(&mut self, channels: &Vec<&str>, event: &str, payload: Payload)-> Result<String, String> {
     let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
     self._trigger(channel_strings, event, payload, None)
   }
 
-  pub fn trigger_multi_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<&str>, event: &str, payload: Payload, socket_id: &str)-> Result<String, &str> {
+  pub fn trigger_multi_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<&str>, event: &str, payload: Payload, socket_id: &str)-> Result<String, String> {
     let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
     self._trigger(channel_strings, event, payload, Some(socket_id.to_string()))
   }
 
-  fn _trigger<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) -> Result<String, &str> { 
+  fn _trigger<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) -> Result<String, String> { 
 
     if event.len() > 200 {
-      return Err("Event name is limited to 200 chars")
+      return Err("Event name is limited to 200 chars".to_string())
     }
     
     if let Err(message) = validate_channels(&channels) {
@@ -155,16 +155,15 @@ impl Pusher{
     let body = json::encode(&raw_body).unwrap();
 
     if body.len() > 10240 {
-      return Err("Data must be smaller than 10kb")
+      return Err("Data must be smaller than 10kb".to_string())
     }
 
     let method = "POST";
     update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), Some(&body), None);
-    let response = send_request(&mut self.http_client, method, request_url, Some(&body)); // TODO - return buffered events
-    Ok(response)
+    create_request::<String>(&mut self.http_client, method, request_url, None)
   }
 
-  pub fn channels(&mut self, params: QueryParameters) -> ChannelList{
+  pub fn channels(&mut self, params: QueryParameters) -> Result<ChannelList, String>{
     let request_url_string = format!("{}://{}/apps/{}/channels", self.scheme(), self.host, self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
@@ -180,7 +179,7 @@ impl Pusher{
     }
   }
 
-  pub fn channel(&mut self, channel_name: &str, params: QueryParameters) -> Channel{
+  pub fn channel(&mut self, channel_name: &str, params: QueryParameters) -> Result<Channel, String>{
     let request_url_string = format!("{}://{}/apps/{}/channels/{}", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
@@ -188,7 +187,7 @@ impl Pusher{
     create_request::<Channel>(&mut self.http_client, method, request_url, None)
   }
 
-  pub fn channel_users(&mut self, channel_name : &str) -> ChannelUserList {
+  pub fn channel_users(&mut self, channel_name : &str) -> Result<ChannelUserList, String> {
     let request_url_string = format!("{}://{}/apps/{}/channels/{}/users", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";

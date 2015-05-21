@@ -140,25 +140,25 @@ fn main() {
 
   pusher.trigger("test_channel", "my_event", &hash_map);
 
-  let trigger_chans = vec!["test_channel", "test_channel2"];
-  pusher.trigger_multi(&trigger_chans, "my_event", &hash_map);
+  // let trigger_chans = vec!["test_channel", "test_channel2"];
+  // pusher.trigger_multi(&trigger_chans, "my_event", &hash_map);
 
 
-  pusher.channels(None);
+  // pusher.channels(None);
 
-  let channels_params = vec![("filter_by_prefix", "presence-"), ("info", "user_count")];
+  // let channels_params = vec![("filter_by_prefix", "presence-"), ("info", "user_count")];
 
-  let channels = pusher.channels(Some(channels_params));
+  // let channels = pusher.channels(Some(channels_params));
 
-  println!("{:?}", channels);
+  // println!("{:?}", channels);
 
-  let channel_params = vec![("info", "user_count,subscription_count")];
+  // let channel_params = vec![("info", "user_count,subscription_count")];
 
-  let channel = pusher.channel("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-hu9e5NecuNr", Some(channel_params));
-  println!("{:?}", channel);
+  // let channel = pusher.channel("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-hu9e5NecuNr", Some(channel_params));
+  // println!("{:?}", channel);
 
-  let users = pusher.channel_users("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-hu9e5NecuNr");
-  println!("{:?}", users);
+  // let users = pusher.channel_users("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-hu9e5NecuNr");
+  // println!("{:?}", users);
 
 
 }
