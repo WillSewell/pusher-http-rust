@@ -131,6 +131,10 @@ impl Pusher{
   }
 
   fn _trigger<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) -> Result<String, &str> { 
+
+    if event.len() > 200 {
+      return Err("Event name is limited to 200 chars")
+    }
     
     if let Err(message) = validate_channels(&channels) {
       return Err(message)
@@ -149,6 +153,10 @@ impl Pusher{
     };
 
     let body = json::encode(&raw_body).unwrap();
+
+    if body.len() > 10240 {
+      return Err("Data must be smaller than 10kb")
+    }
 
     let method = "POST";
     update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), Some(&body), None);
@@ -335,7 +343,31 @@ fn test_channel_length_validation(){
   assert_eq!(res.unwrap_err(), "Channel names must be under 200 characters")
 }
 
+#[test]
+fn test_trigger_payload_size_validation(){
+  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let mut data = "".to_string();
 
+  for i in 1..10242 {
+    data = data + "a"
+  }
+
+  let res = pusher.trigger("yolo", "new_yolo", &data);
+  assert_eq!(res.unwrap_err(), "Data must be smaller than 10kb")
+}
+
+#[test]
+fn test_event_name_length_validation(){
+  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let mut event = "".to_string();
+
+  for i in 1..202 {
+    event = event + "a"
+  }
+
+  let res = pusher.trigger("yolo", &event, "woot");
+  assert_eq!(res.unwrap_err(), "Event name is limited to 200 chars")
+}
 
 
 
