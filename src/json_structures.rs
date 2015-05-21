@@ -8,6 +8,8 @@ pub struct TriggerEventData {
     pub socket_id: Option<String>,
 }
 
+pub type QueryParameters<'a> = Option<Vec<(&'a str, &'a str)>>;
+
 #[derive(RustcDecodable, Debug)]
 pub struct TriggeredEvents {
   pub event_ids: HashMap<String, String>

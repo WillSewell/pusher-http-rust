@@ -1,7 +1,7 @@
 use hyper::Url;
 use time;
 
-use super::QueryParameters;
+use super::json_structures::*;
 use super::signature::*;
 
 const AUTH_VERSION : &'static str = "1.0";

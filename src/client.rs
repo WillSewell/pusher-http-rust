@@ -10,7 +10,6 @@ use super::signature::*;
 use super::request::*;
 use super::request_url::*;
 use super::json_structures::*;
-use super::QueryParameters;
 use super::util::*;
 
 pub struct Pusher {

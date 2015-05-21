@@ -15,5 +15,3 @@ mod util;
 
 pub use self::client::{Pusher,PusherBuilder};
 pub use self::json_structures::{Member, Webhook, Channel, ChannelList, ChannelUserList};
-
-pub type QueryParameters<'a> = Option<Vec<(&'a str, &'a str)>>;
