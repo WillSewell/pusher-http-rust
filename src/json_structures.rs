@@ -12,7 +12,7 @@ pub type QueryParameters<'a> = Option<Vec<(&'a str, &'a str)>>;
 
 #[derive(RustcDecodable, Debug)]
 pub struct TriggeredEvents {
-  pub event_ids: HashMap<String, String>
+  pub event_ids: Option<HashMap<String, String>>
 }
 
 #[derive(RustcDecodable, Debug)]
@@ -23,7 +23,7 @@ pub struct ChannelList {
 #[derive(RustcEncodable)]
 pub struct Member<'a> {
   pub user_id: &'a str,
-  pub user_info: HashMap<&'a str, &'a str>
+  pub user_info: Option<HashMap<&'a str, &'a str>>
 }
 
 #[derive(RustcDecodable, Debug)]

@@ -239,8 +239,6 @@ impl Pusher{
 
   pub fn webhook(&self, key: &String, signature: &String, body: &str) -> Result<Webhook, &str> {
     if (&self.key == key) && check_signature(signature, &self.secret, body) {
-      println!("Checks out");
-      println!("{:?}", body);
       let decoded_webhook : Webhook = json::decode(&body[..]).unwrap();
       return Ok(decoded_webhook)
     }
@@ -265,7 +263,7 @@ fn test_presence_channel_authentication(){
   let expected_encoded : HashMap<String, String> = json::decode(expected).unwrap(); 
   let mut member_data = HashMap::new();
   member_data.insert("name", "Mr. Pusher");
-  let presence_data = Member{user_id: "10", user_info: member_data};
+  let presence_data = Member{user_id: "10", user_info: Some(member_data)};
   let body = "channel_name=presence-foobar&socket_id=1234.1234".to_string();
   let result_json = pusher.authenticate_presence_channel(&body, &presence_data);
   let result_decoded : HashMap<String, String> = json::decode(&result_json.unwrap()).unwrap();
@@ -367,6 +365,25 @@ fn test_event_name_length_validation(){
   assert_eq!(res.unwrap_err(), "Event name is limited to 200 chars")
 }
 
+#[test]
+fn test_initialization_from_url(){
+  let mut pusher = Pusher::from_url("https://key:secret@api.host.com/apps/id").finalize();
+  assert_eq!(pusher.key, "key");
+  assert_eq!(pusher.secret, "secret");
+  assert_eq!(pusher.host, "api.host.com");
+  assert_eq!(pusher.secure, true);
+  assert_eq!(pusher.app_id, "id")
+}
 
+#[test]
+fn test_initialization_from_env(){
+  env::set_var("PUSHER_URL", "https://key:secret@api.host.com/apps/id");
+  let mut pusher = Pusher::from_env("PUSHER_URL").finalize();
+  assert_eq!(pusher.key, "key");
+  assert_eq!(pusher.secret, "secret");
+  assert_eq!(pusher.host, "api.host.com");
+  assert_eq!(pusher.secure, true);
+  assert_eq!(pusher.app_id, "id") 
+}
 
 
