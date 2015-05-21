@@ -129,16 +129,16 @@ fn main() {
   let secret = env!("RUST_SECRET");
 
 
-  let mut pusher = Pusher::new(app_id, key, secret)
-                      .finalize();
+  let mut pusher = Pusher::new(app_id, key, secret).finalize();
 
-  // println!("{:?}", pusher);  
 
   let mut hash_map = HashMap::new();
   hash_map.insert("message", "hello world");
 
 
-  pusher.trigger("test_channel", "my_event", &hash_map);
+  let res = pusher.trigger("test_channel", "my_event", &hash_map);
+
+  println!("{:?}", res);
 
   // let trigger_chans = vec!["test_channel", "test_channel2"];
   // pusher.trigger_multi(&trigger_chans, "my_event", &hash_map);

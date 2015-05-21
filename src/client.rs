@@ -110,27 +110,27 @@ impl Pusher{
 
   }
 
-  pub fn trigger<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload)-> Result<String, String> {
+  pub fn trigger<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload)-> Result<TriggeredEvents, String> {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, None)
   }
 
-  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload, socket_id: &str)-> Result<String, String> {
+  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload, socket_id: &str)-> Result<TriggeredEvents, String> {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, Some(socket_id.to_string()))
   }
 
-  pub fn trigger_multi<Payload : rustc_serialize::Encodable>(&mut self, channels: &Vec<&str>, event: &str, payload: Payload)-> Result<String, String> {
+  pub fn trigger_multi<Payload : rustc_serialize::Encodable>(&mut self, channels: &Vec<&str>, event: &str, payload: Payload)-> Result<TriggeredEvents, String> {
     let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
     self._trigger(channel_strings, event, payload, None)
   }
 
-  pub fn trigger_multi_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<&str>, event: &str, payload: Payload, socket_id: &str)-> Result<String, String> {
+  pub fn trigger_multi_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<&str>, event: &str, payload: Payload, socket_id: &str)-> Result<TriggeredEvents, String> {
     let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
     self._trigger(channel_strings, event, payload, Some(socket_id.to_string()))
   }
 
-  fn _trigger<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) -> Result<String, String> { 
+  fn _trigger<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) -> Result<TriggeredEvents, String> { 
 
     if event.len() > 200 {
       return Err("Event name is limited to 200 chars".to_string())
@@ -160,7 +160,7 @@ impl Pusher{
 
     let method = "POST";
     update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), Some(&body), None);
-    create_request::<String>(&mut self.http_client, method, request_url, None)
+    create_request::<TriggeredEvents>(&mut self.http_client, method, request_url, Some(&body))
   }
 
   pub fn channels(&mut self, params: QueryParameters) -> Result<ChannelList, String>{
