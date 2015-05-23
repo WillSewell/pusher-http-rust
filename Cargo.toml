@@ -1,11 +1,20 @@
 [package]
 name = "pusher"
-version = "0.1.0"
-authors = ["Jamie Patel <jamie@notespublication.com>"]
+version = "0.1.2"
+authors = ["Jamie Patel <jamie@pusher.com>"]
+description = "The Rust library for interacting with the Pusher HTTP API."
+repository = "http://github.com/pusher/pusher-http-rust"
+license = "MIT"
+keywords = ["realtime", "websockets", "pusher"]
 
 [lib]
 name = "pusher"
 path = "src/lib.rs"
+
+[[bin]]
+name = "pusher"
+doc = false
+test = false
 
 [dependencies]
 hyper="0.5.0"
@@ -13,12 +22,7 @@ rust-crypto = "0.2.31"
 rustc-serialize = "0.3"
 time = "0.1"
 regex = "0.1.8"
-
-[dependencies.nickel]
-git = "https://github.com/nickel-org/nickel.rs.git"
-
-[dependencies.queryst]
-git = "https://github.com/rustless/queryst"
+queryst="*"
 
 [dev-dependencies]
 yup-hyper-mock = "*"

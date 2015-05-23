@@ -1,1 +1,1 @@
-paths = ["vendor/yup-hyper-mock"]
+paths = ["/Users/jamiepatel/Desktop/projects/pusher-http-rust/vendor/yup-hyper-mock", "/Users/jamiepatel/Desktop/projects/pusher-http-rust/vendor/queryst"]

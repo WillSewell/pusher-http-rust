@@ -15,6 +15,8 @@ pub type QueryParameters<'a> = Vec<(&'a str, &'a str)>;
 /// Any event_ids returned by the HTTP API, if connected to certain clusters.
 #[derive(RustcDecodable, Debug)]
 pub struct TriggeredEvents {
+  /// For certain clusters, event_ids will be returned upon triggering.
+  /// Otherwise, this value will be `None`.
   pub event_ids: Option<HashMap<String, String>>
 }
 
@@ -28,7 +30,9 @@ pub struct ChannelList {
 /// of the channel. This object becomes associated with that user's subscription.
 #[derive(RustcEncodable)]
 pub struct Member<'a> {
+  /// Supply an id of the member
   pub user_id: &'a str,
+  /// Supply any optional information to be associated with the member
   pub user_info: Option<HashMap<&'a str, &'a str>>
 }
 
@@ -36,15 +40,21 @@ pub struct Member<'a> {
 /// carrying all the data received by that POST request.
 #[derive(RustcDecodable, Debug)]
 pub struct Webhook {
+  /// The timestamp of the webhook
   pub time_ms: i64,
+  /// The events received with the webhook
   pub events: Vec<HashMap<String, String>>,
 }
 
 /// This represents the data received upon querying the state of a Pusher channel.
 #[derive(RustcDecodable, Debug)]
 pub struct Channel {
+  /// Is the channel occupied?
   pub occupied: Option<bool>,
+  /// The number of users presently subscribed to the channel
   pub user_count: Option<i32>,
+  /// For accounts with subscription-counting enabled, the number of users currently
+  /// subscribed to the channel.
   pub subscription_count: Option<i32>,
 }
 
