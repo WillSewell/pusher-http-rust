@@ -1,3 +1,5 @@
+![Travis Badge](https://travis-ci.org/pusher/pusher-http-rust.svg?branch=master)
+
 ## Feature Support
 
 Feature                                    | Supported
