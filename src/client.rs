@@ -163,7 +163,7 @@ impl Pusher{
   ///
   /// **Example:**
   /// 
-  /// ```
+  /// ```ignore
   /// # use pusher::Pusher;
   /// Pusher::from_env("PUSHER_URL").finalize();
   /// ```
@@ -194,7 +194,7 @@ impl Pusher{
   /// ```
   /// # use pusher:: Pusher;
   /// # use std::collections::HashMap;
-  /// # let mut pusher = Pusher::from_env("PUSHER_URL").finalize();
+  /// # let mut pusher = Pusher::new("id", "key", "secret").finalize();
   /// let mut hash_map = HashMap::new();
   /// hash_map.insert("message", "hello world");
   /// pusher.trigger("test_channel", "my_event", &hash_map);
