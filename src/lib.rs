@@ -48,4 +48,4 @@ mod json_structures;
 mod util;
 
 pub use self::client::{Pusher,PusherBuilder};
-pub use self::json_structures::{Member, Webhook, Channel, ChannelList, ChannelUserList, TriggeredEvents, QueryParameters};
+pub use self::json_structures::{Member, Webhook, Channel, ChannelList, ChannelUserList, ChannelUser, TriggeredEvents, QueryParameters};
