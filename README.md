@@ -1,4 +1,7 @@
-![Travis Badge](https://travis-ci.org/pusher/pusher-http-rust.svg?branch=master)
+
+[![Build Status](https://travis-ci.org/pusher/pusher-http-rust.svg?branch=master)](https://travis-ci.org/pusher/pusher-http-rust)
+[![Coverage Status](https://coveralls.io/repos/pusher/pusher-http-rust/badge.svg?branch=master)](https://coveralls.io/r/pusher/pusher-http-rust?branch=master) 
+[![Crates Badge](http://meritbadge.herokuapp.com/pusher)](https://crates.io/crates/pusher)
 
 ## Feature Support
 
