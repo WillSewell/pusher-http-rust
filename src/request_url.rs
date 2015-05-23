@@ -10,7 +10,7 @@ pub fn timestamp() -> String{
   time::get_time().sec.to_string()
 }
 
-pub fn update_request_url(method: &str, request_url: &mut Url, key: &str, secret: &str, timestamp: String, data: Option<&str>, query_parameters: QueryParameters) {
+pub fn update_request_url(method: &str, request_url: &mut Url, key: &str, secret: &str, timestamp: String, data: Option<&str>, query_parameters: Option<QueryParameters>) {
 
   let mut auth_signature : String;
   let body_md5 : String;

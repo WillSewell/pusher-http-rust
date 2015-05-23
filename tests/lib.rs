@@ -48,7 +48,7 @@ fn test_error_response_handler() {
     let mut client = hyper::Client::with_connector(BadRequest);
     let mut pusher = Pusher::new("1", "2", "3").client(client).host("127.0.0.1").finalize();
     let query_params = vec![("info", "user_count,subscription_count")];
-    let res = pusher.channel("this_is_not_a_presence_channel", Some(query_params));
+    let res = pusher.channel_with_options("this_is_not_a_presence_channel", query_params);
     assert_eq!(res.unwrap_err(), "Error: 400 Bad Request. Cannot retrieve the user count unless the channel is a presence channel")
 }
 
@@ -69,7 +69,7 @@ fn test_eb_trigger(){
 fn test_get_channels(){
   let mut client = hyper::Client::with_connector(ChannelsRequest);
   let mut pusher = Pusher::new("1", "2", "3").client(client).host("127.0.0.1").finalize();
-  let res = pusher.channels(None);
+  let res = pusher.channels();
   let channels = res.unwrap();
   let item = channels.channels.get("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-5cbTiUiPNGI").unwrap();
   assert_eq!(item.user_count.unwrap(), 1)
@@ -79,7 +79,7 @@ fn test_get_channels(){
 fn test_get_channel(){
   let mut client = hyper::Client::with_connector(ChannelRequest);
   let mut pusher = Pusher::new("1", "2", "3").client(client).host("127.0.0.1").finalize();
-  let res = pusher.channel("presence-for-all", None); 
+  let res = pusher.channel("presence-for-all"); 
   let channel = res.unwrap();
   let user_count = channel.user_count.unwrap();
   let occupied = channel.occupied.unwrap();

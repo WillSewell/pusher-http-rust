@@ -12,6 +12,8 @@ use super::request_url::*;
 use super::json_structures::*;
 use super::util::*;
 
+/// A client to interact with Pusher's HTTP API to trigger, query application state,
+/// authenticate private- or presence-channels, and validate webhooks.
 pub struct Pusher {
   app_id: String,
   key: String,
@@ -21,6 +23,8 @@ pub struct Pusher {
   http_client: Client,
 }
 
+/// An ephemeral object upon which to pass configuration options to when
+/// initializing a Pusher instance.
 pub struct PusherBuilder {
   app_id: String,
   key: String,
@@ -162,7 +166,15 @@ impl Pusher{
     create_request::<TriggeredEvents>(&mut self.http_client, method, request_url, Some(&body))
   }
 
-  pub fn channels(&mut self, params: QueryParameters) -> Result<ChannelList, String>{
+  pub fn channels(&mut self) -> Result<ChannelList, String> {
+    self._channels(None)
+  }
+
+  pub fn channels_with_options(&mut self, params: QueryParameters) -> Result<ChannelList, String> {
+    self._channels(Some(params))
+  }
+
+  fn _channels(&mut self, params: Option<QueryParameters>) -> Result<ChannelList, String>{
     let request_url_string = format!("{}://{}/apps/{}/channels", self.scheme(), self.host, self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
@@ -178,13 +190,23 @@ impl Pusher{
     }
   }
 
-  pub fn channel(&mut self, channel_name: &str, params: QueryParameters) -> Result<Channel, String>{
+  pub fn channel(&mut self, channel_name: &str) -> Result<Channel, String>{
+    self._channel(channel_name, None)
+  }
+
+  pub fn channel_with_options(&mut self, channel_name: &str, params: QueryParameters) -> Result<Channel, String> {
+    self._channel(channel_name, Some(params))
+  }
+
+  fn _channel(&mut self, channel_name: &str, params: Option<QueryParameters>) -> Result<Channel, String>{
     let request_url_string = format!("{}://{}/apps/{}/channels/{}", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), None, params);
     create_request::<Channel>(&mut self.http_client, method, request_url, None)
   }
+
+
 
   pub fn channel_users(&mut self, channel_name : &str) -> Result<ChannelUserList, String> {
     let request_url_string = format!("{}://{}/apps/{}/channels/{}/users", self.scheme(), self.host, self.app_id, channel_name);
