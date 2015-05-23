@@ -1,0 +1,15 @@
+[package]
+
+name = "yup-hyper-mock"
+version = "1.0.0"
+authors = ["Sean McArthur <sean.monstar@gmail.com>",
+           "Jonathan Reem <jonathan.reem@gmail.com>",
+           "Sebastian Thiel <byronimo@gmail.com>"]
+description = "A utility library for testing clients using hyper"
+repository = "https://github.com/Byron/yup-hyper-mock"
+documentation = "http://byron.github.io/yup-hyper-mock"
+license = "MIT"
+
+[dependencies]
+hyper = ">= 0.5.0"
+log = "*"
