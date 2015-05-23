@@ -344,7 +344,7 @@ pusher.channel("presence-chatroom");
 ```
 **With options**: 
 
-```
+```rust
 let channel_params = vec![("info", "user_count,subscription_count")];
 pusher.channel_with_options("presence-chatroom", channel_params);
 //=> Ok(Channel { occupied: Some(true), user_count: Some(96), subscription_count: Some(96) })
@@ -363,7 +363,7 @@ pusher.channel_with_options("presence-chatroom", channel_params);
 
 ###### Custom Types
 
-**pusher.Users**
+**pusher::ChannelUserList**
 
 ```rust
 pub struct ChannelUserList {
@@ -371,7 +371,7 @@ pub struct ChannelUserList {
 }
 ```
 
-**pusher.User**
+**pusher::ChannelUser**
 
 ```rust
 pub struct ChannelUser {
@@ -406,7 +406,7 @@ This library provides a mechanism for checking that these POST requests are inde
 
 ###### Custom Types
 
-**pusher.Webhook**
+**pusher::Webhook**
 
 ```rust
 pub struct Webhook {
