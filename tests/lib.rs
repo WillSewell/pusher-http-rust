@@ -5,8 +5,6 @@ extern crate hyper;
 #[macro_use] extern crate log;
 
 use pusher::Pusher;
-use std::io::Read;
-
 
 mock_connector!(BadRequest {
     "http://127.0.0.1" =>       "HTTP/1.1 400 Bad Request\r\n\
@@ -45,7 +43,7 @@ mock_connector!(ChannelUsersRequest {
 
 #[test]
 fn test_error_response_handler() {
-    let mut client = hyper::Client::with_connector(BadRequest);
+    let client = hyper::Client::with_connector(BadRequest);
     let mut pusher = Pusher::new("1", "2", "3").client(client).host("127.0.0.1").finalize();
     let query_params = vec![("info", "user_count,subscription_count")];
     let res = pusher.channel_with_options("this_is_not_a_presence_channel", query_params);
@@ -54,7 +52,7 @@ fn test_error_response_handler() {
 
 #[test]
 fn test_eb_trigger(){
-  let mut client = hyper::Client::with_connector(TriggerEBTest);
+  let client = hyper::Client::with_connector(TriggerEBTest);
   let mut pusher = Pusher::new("1", "2", "3").client(client).host("127.0.0.1").finalize();
   let res = pusher.trigger("woot", "yolo", "huh");
   let events = res.unwrap();
@@ -67,7 +65,7 @@ fn test_eb_trigger(){
 
 #[test]
 fn test_get_channels(){
-  let mut client = hyper::Client::with_connector(ChannelsRequest);
+  let client = hyper::Client::with_connector(ChannelsRequest);
   let mut pusher = Pusher::new("1", "2", "3").client(client).host("127.0.0.1").finalize();
   let res = pusher.channels();
   let channels = res.unwrap();
@@ -77,7 +75,7 @@ fn test_get_channels(){
 
 #[test]
 fn test_get_channel(){
-  let mut client = hyper::Client::with_connector(ChannelRequest);
+  let client = hyper::Client::with_connector(ChannelRequest);
   let mut pusher = Pusher::new("1", "2", "3").client(client).host("127.0.0.1").finalize();
   let res = pusher.channel("presence-for-all"); 
   let channel = res.unwrap();
@@ -91,7 +89,7 @@ fn test_get_channel(){
 
 #[test]
 fn test_get_channel_users(){
-   let mut client = hyper::Client::with_connector(ChannelUsersRequest);
+   let client = hyper::Client::with_connector(ChannelUsersRequest);
    let mut pusher = Pusher::new("1", "2", "3").client(client).host("127.0.0.1").finalize();
    let res = pusher.channel_users("presence-yolo");
    let users = res.unwrap().users;
