@@ -75,7 +75,7 @@ Pusher::from_url("http://key:secret@api.host.com/apps/id").finalize();
 
 #### Instantiation From Environment Variable
 
-```go
+```rust
 Pusher::from_env("PUSHER_URL").finalize();
 ```
 
@@ -85,7 +85,7 @@ This is particularly relevant if you are using Pusher as a Heroku add-on, which 
 
 To ensure requests occur over HTTPS, call `secure()` before `finalize()`.
 
-```go
+```rust
 let pusher = Pusher::new("id", "key", "secret").secure().finalize();
 ```
 
@@ -217,7 +217,7 @@ Using presence channels is similar to private channels, but in order to identify
 |Argument|Description|
 |:-:|:-:|
 |params `&String`| The request body sent by the client|
-|member `pusher::Member`| A struct representing what to assign to a channel member, consisting of a `user_id` and any custom `user_info`. See below |
+|member `Option<pusher::Member>`| An optional struct representing what to assign to a channel member, consisting of a `user_id` and any custom `user_info`. See below |
 
 ###### Custom Types
 
@@ -417,7 +417,7 @@ pub struct Webhook {
 
 ###### Example
 
-```go
+```rust
 pusher.webhook("supplied_key", "supplied_signature", "body")
 ```
 
