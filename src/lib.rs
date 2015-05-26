@@ -26,7 +26,7 @@
 //!   let mut pusher = Pusher::new("APP_ID", "KEY", "SECRET").finalize();
 //! 
 //!   // triggers an event called "my_event" on a channel called "test_channel", with the payload "hello world!"
-//!   let res = pusher.trigger("test_channel", "my_event", "hello world!");
+//!   pusher.trigger("test_channel", "my_event", "hello world!");
 //! 
 //! }
 //! ```
