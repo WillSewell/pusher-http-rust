@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CacheControl","`Cache-Control` header, defined in RFC7234"]],"enum":[["CacheDirective","CacheControl contains a list of these directives."]]});

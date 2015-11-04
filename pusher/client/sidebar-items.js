@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Pusher","A client to interact with Pusher's HTTP API to trigger, query application state, authenticate private- or presence-channels, and validate webhooks."],["PusherBuilder","An ephemeral object upon which to pass configuration options to when initializing a Pusher instance."]]});

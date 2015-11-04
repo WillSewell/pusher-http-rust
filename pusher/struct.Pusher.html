@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Pusher` struct in crate `pusher`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Pusher">
+
+    <title>pusher::Pusher - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='index.html'>pusher</a></p><script>window.sidebarCurrent = {name: 'Pusher', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>pusher</a>::<wbr><a class='struct' href=''>Pusher</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-27' href='../src/pusher/client.rs.html#17-30'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Pusher {
+    pub app_id: <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,
+    pub key: <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,
+    pub secret: <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,
+    pub host: <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,
+    pub secure: <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a>,
+    pub http_client: <a class='struct' href='../hyper/client/struct.Client.html' title='hyper::client::Client'>Client</a>,
+}</pre><div class='docblock'><p>A client to interact with Pusher&#39;s HTTP API to trigger, query application state,
+authenticate private- or presence-channels, and validate webhooks.</p>
+</div><h2 class='fields'>Fields</h2>
+<table><tr><td id='structfield.app_id'><a class='stability Unmarked' title='No stability level'></a><code>app_id</code></td><td><div class='docblock'><p>Your app_id from <a href="http://app.pusher.com">http://app.pusher.com</a></p>
+</div></td></tr><tr><td id='structfield.key'><a class='stability Unmarked' title='No stability level'></a><code>key</code></td><td><div class='docblock'><p>Your key from <a href="http://app.pusher.com">http://app.pusher.com</a></p>
+</div></td></tr><tr><td id='structfield.secret'><a class='stability Unmarked' title='No stability level'></a><code>secret</code></td><td><div class='docblock'><p>Your secret from <a href="http://app.pusher.com">http://app.pusher.com</a></p>
+</div></td></tr><tr><td id='structfield.host'><a class='stability Unmarked' title='No stability level'></a><code>host</code></td><td><div class='docblock'><p>The host you wish to connect to. Defaults to api.pusherapp.com</p>
+</div></td></tr><tr><td id='structfield.secure'><a class='stability Unmarked' title='No stability level'></a><code>secure</code></td><td><div class='docblock'><p>If true, requests are made over HTTPS.</p>
+</div></td></tr><tr><td id='structfield.http_client'><a class='stability Unmarked' title='No stability level'></a><code>http_client</code></td><td><div class='docblock'><p>The underlying Hyper HTTP client.</p>
+</div></td></tr></table><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl <a class='struct' href='../pusher/struct.Pusher.html' title='pusher::Pusher'>Pusher</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.new' class='fnname'>new</a>(app_id: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, key: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, secret: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='struct' href='../pusher/struct.PusherBuilder.html' title='pusher::PusherBuilder'>PusherBuilder</a></code></h4>
+<div class='docblock'><p>Initializes the client that makes requests to the HTTP API, authenticates
+private- or presence-channels, and validates webhooks.</p>
+
+<p>This returns a <code>PusherBuilder</code>, on which to set configuration options
+before calling <code>finalize()</code>.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>pusher</span> <span class='op'>=</span> <span class='ident'>Pusher</span>::<span class='ident'>new</span>(<span class='string'>&quot;id&quot;</span>, <span class='string'>&quot;key&quot;</span>, <span class='string'>&quot;secret&quot;</span>).<span class='ident'>host</span>(<span class='string'>&quot;foo.bar.com&quot;</span>).<span class='ident'>finalize</span>();
+</pre>
+</div><h4 id='method.from_url' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.from_url' class='fnname'>from_url</a>(url: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='struct' href='../pusher/struct.PusherBuilder.html' title='pusher::PusherBuilder'>PusherBuilder</a></code></h4>
+<div class='docblock'><p>Initializes a client from a Pusher URL.</p>
+
+<p>This returns a <code>PusherBuilder</code>, on which to set configuration options
+before calling <code>finalize()</code>.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='ident'>Pusher</span>::<span class='ident'>from_url</span>(<span class='string'>&quot;http://key:secret@api.host.com/apps/id&quot;</span>).<span class='ident'>finalize</span>();
+</pre>
+</div><h4 id='method.from_env' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.from_env' class='fnname'>from_env</a>(key: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='struct' href='../pusher/struct.PusherBuilder.html' title='pusher::PusherBuilder'>PusherBuilder</a></code></h4>
+<div class='docblock'><p>Initializes a client from an environment variable Pusher URL.</p>
+
+<p>This returns a <code>PusherBuilder</code>, on which to set configuration options
+before calling <code>finalize()</code>.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='ident'>Pusher</span>::<span class='ident'>from_env</span>(<span class='string'>&quot;PUSHER_URL&quot;</span>).<span class='ident'>finalize</span>();
+</pre>
+</div><h4 id='method.trigger' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.trigger' class='fnname'>trigger</a>&lt;Payload: <a class='trait' href='../rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a>&gt;(&amp;mut self, channel: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, event: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, payload: Payload) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../pusher/struct.TriggeredEvents.html' title='pusher::TriggeredEvents'>TriggeredEvents</a>, <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>This method allows you to trigger Pusher events. You can test this out by
+going on your debug console at <a href="http://app.pusher.com">http://app.pusher.com</a>.</p>
+
+<p>It is possible to trigger an event on one or more channels. Channel names 
+can contain only characters which are alphanumeric, _ or -` and have to be
+at most 200 characters long. Event name can be at most 200 characters long 
+too, and a payload is limited to 10kb.</p>
+
+<p>This method is for triggering on only one channel, and does not allow 
+socket_ids to be passed in for excluding recipients. If you wish to
+trigger on multiple channels, use <code>trigger_multi</code>. If you wish to exclude
+recipients by their socket_id, use <code>trigger_exclusive</code>. For doing both,
+use <code>trigger_multi_exclusive</code>.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>hash_map</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>new</span>();
+<span class='ident'>hash_map</span>.<span class='ident'>insert</span>(<span class='string'>&quot;message&quot;</span>, <span class='string'>&quot;hello world&quot;</span>);
+<span class='ident'>pusher</span>.<span class='ident'>trigger</span>(<span class='string'>&quot;test_channel&quot;</span>, <span class='string'>&quot;my_event&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>hash_map</span>);
+</pre>
+
+<p>If you call this with <a href="http://app.pusher.com">http://app.pusher.com</a> open, you should receive
+an alert saying, &#39;hello world&#39;. </p>
+
+<p>This method returns a <code>Result</code>. If successful, the <code>Ok</code> value will be a 
+<code>TriggeredEvents</code> instance, which, if you are connected to certain clusters, 
+holds the <code>event_ids</code> of published events. If an error has occured,
+the <code>Error</code> value will contain a <code>String</code> regarding what went wrong.</p>
+</div><h4 id='method.trigger_exclusive' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.trigger_exclusive' class='fnname'>trigger_exclusive</a>&lt;Payload: <a class='trait' href='../rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a>&gt;(&amp;mut self, channel: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, event: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, payload: Payload, socket_id: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../pusher/struct.TriggeredEvents.html' title='pusher::TriggeredEvents'>TriggeredEvents</a>, <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>This method allow you to exclude a recipient whose connection has that
+<code>socket_id</code> from receiving the event. You can read more here: 
+<a href="http://pusher.com/docs/duplicates">http://pusher.com/docs/duplicates</a>.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='ident'>pusher</span>.<span class='ident'>trigger_exclusive</span>(<span class='string'>&quot;test_channel&quot;</span>, <span class='string'>&quot;my_event&quot;</span>, <span class='string'>&quot;hello&quot;</span>, <span class='string'>&quot;123.12&quot;</span>);
+</pre>
+</div><h4 id='method.trigger_multi' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.trigger_multi' class='fnname'>trigger_multi</a>&lt;Payload: <a class='trait' href='../rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a>&gt;(&amp;mut self, channels: &amp;<a class='struct' href='http://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;&amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>&gt;, event: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, payload: Payload) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../pusher/struct.TriggeredEvents.html' title='pusher::TriggeredEvents'>TriggeredEvents</a>, <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>This method allow you to trigger an event on multiple channels, with a
+maximum of 10.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>let</span> <span class='ident'>channels</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;test_channel&quot;</span>, <span class='string'>&quot;test_channel2&quot;</span>];
+<span class='ident'>pusher</span>.<span class='ident'>trigger_multi</span>(<span class='kw-2'>&amp;</span><span class='ident'>channels</span>, <span class='string'>&quot;my_event&quot;</span>, <span class='string'>&quot;hello&quot;</span>);
+</pre>
+</div><h4 id='method.trigger_multi_exclusive' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.trigger_multi_exclusive' class='fnname'>trigger_multi_exclusive</a>&lt;Payload: <a class='trait' href='../rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a>&gt;(&amp;mut self, channels: &amp;<a class='struct' href='http://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;&amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>&gt;, event: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, payload: Payload, socket_id: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../pusher/struct.TriggeredEvents.html' title='pusher::TriggeredEvents'>TriggeredEvents</a>, <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>This method allow you to trigger an event on multiple channels and exclude
+a recipient with a given <code>socket_id</code>.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>let</span> <span class='ident'>channels</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;test_channel&quot;</span>, <span class='string'>&quot;test_channel2&quot;</span>];
+<span class='ident'>pusher</span>.<span class='ident'>trigger_multi_exclusive</span>(<span class='kw-2'>&amp;</span><span class='ident'>channels</span>, <span class='string'>&quot;my_event&quot;</span>, <span class='string'>&quot;hello&quot;</span>, <span class='string'>&quot;123.12&quot;</span>);
+</pre>
+</div><h4 id='method.channels' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.channels' class='fnname'>channels</a>(&amp;mut self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../pusher/struct.ChannelList.html' title='pusher::ChannelList'>ChannelList</a>, <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>One can use this method to get a list of all the channels in an application from the HTTP API.</p>
+
+<p>Without any supplied options, all fields for each <code>Channel</code> will be <code>None</code>.
+If you wish to specify options for your query, see the <code>channels_with_options</code> method.</p>
+
+<p>An <code>Err</code> will be returned for any invalid API requests.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='ident'>pusher</span>.<span class='ident'>channels</span>();
+<span class='comment'>//=&gt; Ok(ChannelList { channels: {&quot;presence-chatroom&quot;: Channel { occupied: None, user_count: None, subscription_count: None }, &quot;presence-notifications&quot;: Channel { occupied: None, user_count: None, subscription_count: None }} })</span>
+</pre>
+</div><h4 id='method.channels_with_options' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.channels_with_options' class='fnname'>channels_with_options</a>(&amp;mut self, params: <a class='type' href='../pusher/type.QueryParameters.html' title='pusher::QueryParameters'>QueryParameters</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../pusher/struct.ChannelList.html' title='pusher::ChannelList'>ChannelList</a>, <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>When adding options to your GET channels request, pass in a vector of tuples.
+A tuple whose first value is &quot;filter_by_prefix&quot; will filter the returned channels.
+To request more information, you can add a tuple beginning with <code>&quot;info&quot;</code> to that vector.
+To get number of users subscribed to a presence-channel, pass in a vector 
+with a <code>(&quot;info&quot;, &quot;user_count&quot;)</code> tuple. </p>
+
+<p>An <code>Err</code> will be returned for any invalid API requests.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>let</span> <span class='ident'>channels_params</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[(<span class='string'>&quot;filter_by_prefix&quot;</span>, <span class='string'>&quot;presence-&quot;</span>), (<span class='string'>&quot;info&quot;</span>, <span class='string'>&quot;user_count&quot;</span>)];
+<span class='ident'>pusher</span>.<span class='ident'>channels_with_options</span>(<span class='ident'>channels_params</span>);
+<span class='comment'>//=&gt; Ok(ChannelList { channels: {&quot;presence-chatroom&quot;: Channel { occupied: None, user_count: Some(92), subscription_count: None }, &quot;presence-notifications&quot;: Channel { occupied: None, user_count: Some(29), subscription_count: None }} })</span>
+</pre>
+</div><h4 id='method.channel' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.channel' class='fnname'>channel</a>(&amp;mut self, channel_name: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../pusher/struct.Channel.html' title='pusher::Channel'>Channel</a>, <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>This method gets the state of a single channel.</p>
+
+<p>Without any options specified, only the <code>occupied</code> field of the <code>Channel</code> instance
+will have a value. To specify options, see the <code>channel_with_options</code> method.</p>
+
+<p>An <code>Err</code> will be returned for any invalid API requests.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='ident'>pusher</span>.<span class='ident'>channel</span>(<span class='string'>&quot;presence-chatroom&quot;</span>);
+<span class='comment'>//=&gt; Ok(Channel { occupied: Some(true), user_count: None, subscription_count: None })</span>
+</pre>
+</div><h4 id='method.channel_with_options' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.channel_with_options' class='fnname'>channel_with_options</a>(&amp;mut self, channel_name: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, params: <a class='type' href='../pusher/type.QueryParameters.html' title='pusher::QueryParameters'>QueryParameters</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../pusher/struct.Channel.html' title='pusher::Channel'>Channel</a>, <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>Pass in a vector of tuples to specify options. To request information regarding
+<code>user_count</code> and <code>subscription_count</code>, a tuple must have an <code>&quot;info&quot;</code> value 
+and a value containing a comma-separated list of attributes.</p>
+
+<p>An <code>Err</code> will be returned for any invalid API requests.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>let</span> <span class='ident'>channel_params</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[(<span class='string'>&quot;info&quot;</span>, <span class='string'>&quot;user_count,subscription_count&quot;</span>)];
+<span class='ident'>pusher</span>.<span class='ident'>channel_with_options</span>(<span class='string'>&quot;presence-chatroom&quot;</span>, <span class='ident'>channel_params</span>);
+<span class='comment'>//=&gt; Ok(Channel { occupied: Some(true), user_count: Some(96), subscription_count: Some(96) })</span>
+</pre>
+</div><h4 id='method.channel_users' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.channel_users' class='fnname'>channel_users</a>(&amp;mut self, channel_name: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../pusher/struct.ChannelUserList.html' title='pusher::ChannelUserList'>ChannelUserList</a>, <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>This method retrieves the ids of users that are currently subscribed to a
+given presence-channel.</p>
+
+<p>An <code>Err</code> will be returned for any invalid API requests.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='ident'>pusher</span>.<span class='ident'>channel_users</span>(<span class='string'>&quot;presence-chatroom&quot;</span>);
+<span class='comment'>//=&gt; Ok(ChannelUserList { users: [ChannelUser { id: &quot;red&quot; }, ChannelUser { id: &quot;blue&quot; }] })</span>
+</pre>
+</div><h4 id='method.authenticate_private_channel' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.authenticate_private_channel' class='fnname'>authenticate_private_channel</a>(&amp;self, body: &amp;<a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>, &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>&gt;</code></h4>
+<div class='docblock'><p>Application security is very important so Pusher provides a mechanism for
+ authenticating a user’s access to a channel at the point of subscription.</p>
+
+<p>This can be used both to restrict access to private channels, and in the 
+ case of presence channels notify subscribers of who else is also subscribed via presence events.</p>
+
+<p>This library provides a mechanism for generating an authentication signature 
+ to send back to the client and authorize them.</p>
+
+<p>For more information see our docs: <a href="http://pusher.com/docs/authenticating_users">http://pusher.com/docs/authenticating_users</a>.</p>
+
+<p>In order to authenticate a channel, pass in the body sent to your authentication
+ endpoint upon subscription.</p>
+
+<p>If an invalid body is passed in, this method will return an <code>Err</code> value.</p>
+
+<p><strong>Example With Nickel.rs:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+ <span class='kw'>fn</span> <span class='ident'>pusher_auth</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='ident'>req</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Request</span>, <span class='ident'>res</span>: <span class='ident'>Response</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>MiddlewareResult</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
+ 
+  <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>body</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
+  <span class='ident'>req</span>.<span class='ident'>origin</span>.<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>body</span>).<span class='ident'>unwrap</span>(); <span class='comment'>// get the body from the request</span>
+  <span class='kw'>let</span> <span class='ident'>auth</span> <span class='op'>=</span> <span class='ident'>pusher</span>.<span class='ident'>authenticate_private_channel</span>(<span class='kw-2'>&amp;</span><span class='ident'>body</span>).<span class='ident'>unwrap</span>(); <span class='comment'>// unwrap the result of the method</span>
+  <span class='ident'>res</span>.<span class='ident'>send</span>(<span class='ident'>auth</span>)
+
+}
+</pre>
+</div><h4 id='method.authenticate_presence_channel' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.authenticate_presence_channel' class='fnname'>authenticate_presence_channel</a>(&amp;self, body: &amp;<a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>, member: &amp;<a class='struct' href='../pusher/struct.Member.html' title='pusher::Member'>Member</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>, &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>&gt;</code></h4>
+<div class='docblock'><p>Using presence channels is similar to private channels, but in order to identify a user,
+clients are sent a user_id and, optionally, custom data.</p>
+
+<p>In this library, one does this by passing a <code>pusher::Member</code> instance. The <code>id</code> field of this instance
+must be a string, and any custom data will be a <code>HashMap</code> wrapped in <code>Some</code>.</p>
+
+<p><strong>Example With Nickel.rs</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>fn</span> <span class='ident'>pusher_auth</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='ident'>req</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Request</span>, <span class='ident'>res</span>: <span class='ident'>Response</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>MiddlewareResult</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
+
+  <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>body</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
+  <span class='ident'>req</span>.<span class='ident'>origin</span>.<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>body</span>).<span class='ident'>unwrap</span>();
+
+  <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>member_data</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>new</span>();
+  <span class='ident'>member_data</span>.<span class='ident'>insert</span>(<span class='string'>&quot;twitter&quot;</span>, <span class='string'>&quot;jamiepatel&quot;</span>);
+
+  <span class='kw'>let</span> <span class='ident'>member</span> <span class='op'>=</span> <span class='ident'>pusher</span>::<span class='ident'>Member</span>{<span class='ident'>user_id</span>: <span class='string'>&quot;4&quot;</span>, <span class='ident'>user_info</span>: <span class='prelude-val'>Some</span>(<span class='ident'>member_data</span>)};
+
+  <span class='kw'>let</span> <span class='ident'>auth</span> <span class='op'>=</span> <span class='ident'>pusher</span>.<span class='ident'>authenticate_presence_channel</span>(<span class='kw-2'>&amp;</span><span class='ident'>body</span>, <span class='kw-2'>&amp;</span><span class='ident'>member</span>).<span class='ident'>unwrap</span>();
+  <span class='ident'>res</span>.<span class='ident'>send</span>(<span class='ident'>auth</span>)
+
+}
+</pre>
+</div><h4 id='method.webhook' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.webhook' class='fnname'>webhook</a>(&amp;self, key: &amp;<a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>, signature: &amp;<a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>, body: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../pusher/struct.Webhook.html' title='pusher::Webhook'>Webhook</a>, &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>&gt;</code></h4>
+<div class='docblock'><p>On your dashboard at <a href="http://app.pusher.com">http://app.pusher.com</a>, you can set up webhooks to POST a
+payload to your server after certain events. Such events include channels being 
+occupied or vacated, members being added or removed in presence-channels, or 
+after client-originated events. For more information see <a href="https://pusher.com/docs/webhooks">https://pusher.com/docs/webhooks</a>.</p>
+
+<p>This library provides a mechanism for checking that these POST requests are 
+indeed from Pusher, by checking the token and authentication signature in the 
+header of the request.</p>
+
+<p>Pass in the key supplied in the <code>&quot;X-Pusher-Key&quot;</code> header, the signature supplied
+in the <code>&quot;X-Pusher-Signature&quot;</code> header, and the body of the request.</p>
+
+<p>If the webhook is valid, a <code>pusher::Webhook</code> instance will be returned within the <code>Result</code> enum.
+If not, an <code>Err</code> will be returned.</p>
+
+<p><strong>Example:</strong></p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='ident'>pusher</span>.<span class='ident'>webhook</span>(<span class='string'>&quot;supplied_key&quot;</span>, <span class='string'>&quot;supplied_signature&quot;</span>, <span class='string'>&quot;body&quot;</span>)
+</pre>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "pusher";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>
