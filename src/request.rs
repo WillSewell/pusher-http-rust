@@ -36,13 +36,12 @@ pub fn send_request(client: &mut Client, method: &str, request_url: Url, data: O
 
     let mut body = String::new();
     res.read_to_string(&mut body).unwrap();
-    println!("{:?}", body);
 
-   match res.status {
-    StatusCode::Ok => return Ok(body),
-    _ =>  {
-      return Err(format!("Error: {}. {}", res.status, body))
-    }
+    match res.status {
+      StatusCode::Ok => return Ok(body),
+      _ =>  {
+        return Err(format!("Error: {}. {}", res.status, body))
+      }
     }
 
 }
