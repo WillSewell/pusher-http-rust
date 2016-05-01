@@ -70,9 +70,3 @@ pub struct ChannelUserList {
 pub struct ChannelUser {
   pub id: String,
 }
-
-#[derive(RustcDecodable, Debug)]
-pub struct AuthParams {
-  pub channel_name: String,
-  pub socket_id: String,
-}

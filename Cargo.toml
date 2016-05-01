@@ -12,13 +12,13 @@ name = "pusher"
 path = "src/lib.rs"
 
 [dependencies]
-hyper="0.5.0"
-rust-crypto = "0.2.31"
+hyper = "0.9"
+regex = "0.1"
+rust-crypto = "0.2"
 rustc-serialize = "0.3"
 time = "0.1"
-regex = "0.1.8"
-queryst="*"
+url = "1"
 
 [dev-dependencies]
-yup-hyper-mock = "*"
-log = "*"  # log macros are used within yup-hyper-mock
+yup-hyper-mock = "1"
+log = "0.3"  # log macros are used within yup-hyper-mock

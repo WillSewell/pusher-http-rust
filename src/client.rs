@@ -1,16 +1,16 @@
-use rustc_serialize::{self, json};
-use hyper::{Url, Client};
-use queryst::parse;
-use std::collections::HashMap;
-
-use std::env;
+use hyper::{Client};
 use regex::Regex;
+use rustc_serialize::{self, json};
+use std::collections::HashMap;
+use std::env;
+use url::{Url};
 
 use super::signature::*;
 use super::request::*;
 use super::request_url::*;
 use super::json_structures::*;
 use super::util::*;
+
 
 /// A client to interact with Pusher's HTTP API to trigger, query application state,
 /// authenticate private- or presence-channels, and validate webhooks.
@@ -21,7 +21,7 @@ pub struct Pusher {
   pub key: String, 
   /// Your secret from <http://app.pusher.com>
   pub secret: String, 
-  /// The host you wish to connect to. Defaults to api.pusherapp.com
+  /// The host[:port] you wish to connect to. Defaults to api.pusherapp.com
   pub host: String, 
   /// If true, requests are made over HTTPS.
   pub secure: bool, 
@@ -74,7 +74,7 @@ impl PusherBuilder{
 
   /// This method actually creates the `Pusher` instance from your chained configuration.
   pub fn finalize(self) -> Pusher {
-   Pusher {
+    Pusher {
       app_id: self.app_id,
       key: self.key,
       secret: self.secret,
@@ -130,14 +130,14 @@ impl Pusher{
   pub fn from_url(url: &str) -> PusherBuilder {
     let pusher_url = Url::parse(url).unwrap();
 
-    let key = pusher_url.username().unwrap();
+    let key = pusher_url.username();
     let secret = pusher_url.password().unwrap();
     let host = pusher_url.host().unwrap();
-    let path = pusher_url.path().unwrap();
-    let app_id = &path[1];
+    let v: Vec<&str> = pusher_url.path_segments().unwrap().collect();
+    let app_id = v[1];
     let mut secure  = false;
 
-    if pusher_url.scheme == "https" {
+    if pusher_url.scheme() == "https" {
       secure = true;
     }
 
@@ -291,7 +291,8 @@ impl Pusher{
     }
 
     let method = "POST";
-    update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), Some(&body), None);
+    let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), Some(&body), None);
+    request_url.set_query(Some(&query));
     create_request::<TriggeredEvents>(&mut self.http_client, method, request_url, Some(&body))
   }
 
@@ -341,7 +342,8 @@ impl Pusher{
     let request_url_string = format!("{}://{}/apps/{}/channels", self.scheme(), self.host, self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
-    update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), None, params);
+    let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), None, params);
+    request_url.set_query(Some(&query));
     create_request::<ChannelList>(&mut self.http_client, method, request_url, None)
   }
 
@@ -398,7 +400,8 @@ impl Pusher{
     let request_url_string = format!("{}://{}/apps/{}/channels/{}", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
-    update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), None, params);
+    let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), None, params);
+    request_url.set_query(Some(&query));
     create_request::<Channel>(&mut self.http_client, method, request_url, None)
   }
 
@@ -419,7 +422,8 @@ impl Pusher{
     let request_url_string = format!("{}://{}/apps/{}/channels/{}/users", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
-    update_request_url(method, &mut request_url, &self.key, &self.secret, timestamp(), None, None);
+    let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), None, None);
+    request_url.set_query(Some(&query));
     create_request::<ChannelUserList>(&mut self.http_client, method, request_url, None)
   }
 
@@ -443,16 +447,15 @@ impl Pusher{
   ///
   /// ```ignore
   /// fn pusher_auth<'a>(req: &mut Request, res: Response<'a>) -> MiddlewareResult<'a> {
-  /// 
-  ///  let mut body = String::new();
-  ///  req.origin.read_to_string(&mut body).unwrap(); // get the body from the request
-  ///  let auth = pusher.authenticate_private_channel(&body).unwrap(); // unwrap the result of the method
-  ///  res.send(auth)
-  ///
-  ///}
+  ///   let form_body = req.form_body().unwrap();
+  ///   let channel_name = form_body.get("channel_name").unwrap();
+  ///   let socket_id = form_body.get("socket_id").unwrap();
+  ///   let auth = pusher.authenticate_private_channel(&channel_name, &socket_id).unwrap(); // unwrap the result of the method
+  ///   res.send(auth)
+  /// }
   /// ```
-  pub fn authenticate_private_channel(&self, body: &String) -> Result<String, &str> {
-    self.authenticate_channel(body, None)
+  pub fn authenticate_private_channel(&self, channel_name: &str, socket_id: &str) -> Result<String, &str> {
+    self.authenticate_channel(channel_name, socket_id, None)
   }
 
   /// Using presence channels is similar to private channels, but in order to identify a user, 
@@ -465,41 +468,24 @@ impl Pusher{
   ///
   /// ```ignore
   /// fn pusher_auth<'a>(req: &mut Request, res: Response<'a>) -> MiddlewareResult<'a> {
-  ///
-  ///   let mut body = String::new();
-  ///   req.origin.read_to_string(&mut body).unwrap();
+  ///   let form_body = req.form_body().unwrap();
+  ///   let channel_name = form_body.get("channel_name").unwrap();
+  ///   let socket_id = form_body.get("socket_id").unwrap();
   ///
   ///   let mut member_data = HashMap::new();
   ///   member_data.insert("twitter", "jamiepatel");
   ///
   ///   let member = pusher::Member{user_id: "4", user_info: Some(member_data)};
   ///
-  ///   let auth = pusher.authenticate_presence_channel(&body, &member).unwrap();
+  ///   let auth = pusher.authenticate_presence_channel(&channel_name, &socket_id, &member).unwrap();
   ///   res.send(auth)
-  ///
   /// }
   /// ```
-  pub fn authenticate_presence_channel(&self, body: &String, member: &Member) -> Result<String, &str> {
-    self.authenticate_channel(body, Some(member))
+  pub fn authenticate_presence_channel(&self, channel_name: &str, socket_id: &str, member: &Member) -> Result<String, &str> {
+    self.authenticate_channel(channel_name, socket_id, Some(member))
   }
 
-  fn authenticate_channel(&self, body: &String, member: Option<&Member>) -> Result<String, &str> {
-    let object = parse(body);
-    
-    let json_params = match object {
-      Ok(parsed_params) => parsed_params.to_string(),
-      Err(_) => return Err("Could not parse body") 
-    };
-
-    let auth : AuthParams = match json::decode(&json_params) {
-      Ok(parsed_auth) => parsed_auth,
-      Err(_) => return Err("Could not parse body")
-    };
-
-    let mut auth_map = HashMap::new();
-    let channel_name = auth.channel_name;
-    let socket_id = auth.socket_id;
-
+  fn authenticate_channel(&self, channel_name: &str, socket_id: &str, member: Option<&Member>) -> Result<String, &str> {
     let socket_id_regex = Regex::new(r"\A\d+\.\d+\z").unwrap(); // how to make this global?
 
     if !socket_id_regex.is_match(&socket_id) {
@@ -507,6 +493,8 @@ impl Pusher{
     }
 
     let mut to_sign = format!("{}:{}", socket_id, channel_name);
+
+    let mut auth_map = HashMap::new();
 
     if let Some(presence_member) = member {
       let json_member = json::encode(presence_member).unwrap();
@@ -554,8 +542,7 @@ impl Pusher{
 fn test_private_channel_authentication(){
   let pusher = Pusher::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
   let expected = "{\"auth\":\"278d425bdf160c739803:58df8b0c36d6982b82c3ecf6b4662e34fe8c25bba48f5369f135bf843651c3a4\"}".to_string();
-  let body = "channel_name=private-foobar&socket_id=1234.1234".to_string();
-  let result = pusher.authenticate_private_channel(&body);
+  let result = pusher.authenticate_private_channel("private-foobar", "1234.1234");
   assert_eq!(result.unwrap(), expected)
 }
 
@@ -567,8 +554,7 @@ fn test_presence_channel_authentication(){
   let mut member_data = HashMap::new();
   member_data.insert("name", "Mr. Pusher");
   let presence_data = Member{user_id: "10", user_info: Some(member_data)};
-  let body = "channel_name=presence-foobar&socket_id=1234.1234".to_string();
-  let result_json = pusher.authenticate_presence_channel(&body, &presence_data);
+  let result_json = pusher.authenticate_presence_channel("presence-foobar", "1234.1234", &presence_data);
   let result_decoded : HashMap<String, String> = json::decode(&result_json.unwrap()).unwrap();
   
   assert_eq!(result_decoded["auth"], expected_encoded["auth"]);
@@ -578,8 +564,7 @@ fn test_presence_channel_authentication(){
 #[test]
 fn test_socket_id_validation(){
   let pusher = Pusher::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
-  let body = "channel_name=private-foobar&socket_id=12341234".to_string();
-  let result = pusher.authenticate_private_channel(&body);
+  let result = pusher.authenticate_private_channel("private-foobar", "12341234");
   assert_eq!(result.unwrap_err(), "Invalid socket_id")
 }
 
@@ -634,7 +619,7 @@ fn test_channel_length_validation(){
   let mut pusher = Pusher::new("id", "key", "secret").finalize();
   let mut channel = "".to_string();
 
-  for i in 1..202 {
+  for _ in 1..202 {
     channel = channel + "a"
   }
 
@@ -647,7 +632,7 @@ fn test_trigger_payload_size_validation(){
   let mut pusher = Pusher::new("id", "key", "secret").finalize();
   let mut data = "".to_string();
 
-  for i in 1..10242 {
+  for _ in 1..10242 {
     data = data + "a"
   }
 
@@ -660,7 +645,7 @@ fn test_event_name_length_validation(){
   let mut pusher = Pusher::new("id", "key", "secret").finalize();
   let mut event = "".to_string();
 
-  for i in 1..202 {
+  for _ in 1..202 {
     event = event + "a"
   }
 
