@@ -32,70 +32,76 @@ pub fn build_query(method: &str, path: &str, key: &str, secret: &str, timestamp:
 
   query_pairs.sort_by(|&(a, _), &(b, _)| { a.cmp(b) });
 
+  // Build the query string to sign by hand because we don't want it URL encoded
+  let mut query_string_to_sign = String::new();
+  let mut first = true;
+  for &(k, v) in &query_pairs {
+    if first {
+      first = false;
+    } else {
+      query_string_to_sign.push_str("&");
+    }
+    query_string_to_sign.push_str(k);
+    query_string_to_sign.push_str("=");
+    query_string_to_sign.push_str(v);
+  }
+
+  let to_sign = format!("{}\n{}\n{}", method, path, query_string_to_sign);
+  let auth_signature = create_auth_signature(&to_sign, &secret);
+
   let query_buffer = String::new();
   let mut query_serializer = Serializer::new(query_buffer);
 
   for (k, v) in query_pairs {
     query_serializer.append_pair(k, v);
   }
+  query_serializer.append_pair("auth_signature", auth_signature.as_str());
 
-  let query_string = query_serializer.finish();
-
-  let to_sign = format!("{}\n{}\n{}", method, path, query_string);
-
-  let auth_signature = create_auth_signature(&to_sign, &secret);
-
-  format!("{}&auth_signature={}", query_string, auth_signature)
+  return query_serializer.finish();
 }
 
 #[test]
 fn test_trigger_request_url() {
-  let expected = "?auth_key=key&auth_timestamp=1353088179&auth_version=1.0&body_md5=ec365a775a4cd0599faeb73354201b6f&auth_signature=3695357e49aa04ae6f3cd76039dcefd82da079d0564bac566033d48ebae75459";
+  let expected = "auth_key=key&auth_timestamp=1353088179&auth_version=1.0&body_md5=ec365a775a4cd0599faeb73354201b6f&auth_signature=3695357e49aa04ae6f3cd76039dcefd82da079d0564bac566033d48ebae75459";
   let payload = "{\"name\":\"foo\",\"channels\":[\"project-3\"],\"data\":\"{\\\"some\\\":\\\"data\\\"}\"}";
   let query = build_query("POST", "/apps/3/events", "key", "secret", "1353088179".to_string(), Some(payload), None);
   assert_eq!(expected, query)
 }
 
-// #[test]
-// fn test_get_channels_url(){
-//   let expected = "http://api.pusherapp.com/apps/102015/channels?auth_key=key&auth_timestamp=1427034994&auth_version=1.0&filter_by_prefix=presence-&info=user_count&auth_signature=0ba82990cff5311f09d88d8c9317d1ceb1b2e085c01deb65618f4eaea1624d89";
-//   let mut request_url = Url::parse("http://api.pusherapp.com/apps/102015/channels").unwrap();
-//   let query_parameters = Some(vec![("filter_by_prefix", "presence-"), ("info", "user_count")]);
-//   update_request_url("GET", &mut request_url, "key", "secret", "1427034994".to_string(), None, query_parameters);
-//   assert_eq!(expected, &request_url.serialize())
-// }
+#[test]
+fn test_get_channels_url(){
+  let expected = "auth_key=key&auth_timestamp=1427034994&auth_version=1.0&filter_by_prefix=presence-&info=user_count&auth_signature=0ba82990cff5311f09d88d8c9317d1ceb1b2e085c01deb65618f4eaea1624d89";
+  let query_parameters = Some(vec![("filter_by_prefix", "presence-"), ("info", "user_count")]);
+  let query = build_query("GET", "/apps/102015/channels", "key", "secret", "1427034994".to_string(), None, query_parameters);
+  assert_eq!(expected, query)
+}
 
-// #[test]
-// fn test_get_channels_url_with_one_additional_param(){
-//   let expected = "http://api.pusherapp.com/apps/102015/channels?auth_key=key&auth_timestamp=1427036577&auth_version=1.0&filter_by_prefix=presence-&auth_signature=a27c87175390e1748e14fb6531769362ffb1a4fb437e9f353ff09e7fa314ce84";
-//   let mut request_url = Url::parse("http://api.pusherapp.com/apps/102015/channels").unwrap();
-//   let query_parameters = Some(vec![("filter_by_prefix", "presence-")]);
-//   update_request_url("GET", &mut request_url, "key", "secret", "1427036577".to_string(), None, query_parameters);
-//   assert_eq!(expected, &request_url.serialize())
-// }
+#[test]
+fn test_get_channels_url_with_one_additional_param(){
+  let expected = "auth_key=key&auth_timestamp=1427036577&auth_version=1.0&filter_by_prefix=presence-&auth_signature=a27c87175390e1748e14fb6531769362ffb1a4fb437e9f353ff09e7fa314ce84";
+  let query_parameters = Some(vec![("filter_by_prefix", "presence-")]);
+  let query = build_query("GET", "/apps/102015/channels", "key", "secret", "1427036577".to_string(), None, query_parameters);
+  assert_eq!(expected, query)
+}
 
-// #[test]
-// fn test_get_channels_url_with_no_params(){
-//  let expected = "http://api.pusherapp.com/apps/102015/channels?auth_key=key&auth_timestamp=1427036787&auth_version=1.0&auth_signature=805473a9346a00c6ddca6059286f7f6b4e4c45dea1ead355f115decba06bfa4d";
-//  let mut request_url = Url::parse("http://api.pusherapp.com/apps/102015/channels").unwrap();
-//  update_request_url("GET", &mut request_url, "key", "secret", "1427036787".to_string(), None, None);
-//   assert_eq!(expected, &request_url.serialize())
-// }
+#[test]
+fn test_get_channels_url_with_no_params(){
+  let expected = "auth_key=key&auth_timestamp=1427036787&auth_version=1.0&auth_signature=805473a9346a00c6ddca6059286f7f6b4e4c45dea1ead355f115decba06bfa4d";
+  let query = build_query("GET", "/apps/102015/channels", "key", "secret", "1427036787".to_string(), None, None);
+  assert_eq!(expected, query)
+}
 
-// #[test]
-// fn test_get_channel_url(){
-//   let expected = "http://api.pusherapp.com/apps/102015/channels/presence-session-d41a439c438a100756f5-4bf35003e819bb138249-ROpCFmgFhXY?auth_key=key&auth_timestamp=1427053326&auth_version=1.0&info=user_count%2Csubscription_count&auth_signature=c39bf2e1ef8a4cbfc8e283daa610862cf01fd250437476e1ff4100677ebd3dab";
-//   let mut request_url = Url::parse("http://api.pusherapp.com/apps/102015/channels/presence-session-d41a439c438a100756f5-4bf35003e819bb138249-ROpCFmgFhXY").unwrap();
-//   let query_parameters = Some(vec![("info", "user_count,subscription_count")]);
-//   update_request_url("GET", &mut request_url, "key", "secret", "1427053326".to_string(), None, query_parameters);
-//   assert_eq!(expected, &request_url.serialize())
-// }
+#[test]
+fn test_get_channel_url(){
+  let expected = "auth_key=key&auth_timestamp=1427053326&auth_version=1.0&info=user_count%2Csubscription_count&auth_signature=c39bf2e1ef8a4cbfc8e283daa610862cf01fd250437476e1ff4100677ebd3dab";
+  let query_parameters = Some(vec![("info", "user_count,subscription_count")]);
+  let query = build_query("GET", "/apps/102015/channels/presence-session-d41a439c438a100756f5-4bf35003e819bb138249-ROpCFmgFhXY", "key", "secret", "1427053326".to_string(), None, query_parameters);
+  assert_eq!(expected, query)
+}
 
-// #[test]
-// fn test_get_users_url() {
-//   let expected = "http://api.pusherapp.com/apps/102015/channels/presence-session-d41a439c438a100756f5-4bf35003e819bb138249-nYJLy67qh52/users?auth_key=key&auth_timestamp=1427053326&auth_version=1.0&auth_signature=15f3d742965b5728ed2089c4fdae186a5684a8a17c9bf230ad5bd244bc8164f7";
-//   let mut request_url = Url::parse("http://api.pusherapp.com/apps/102015/channels/presence-session-d41a439c438a100756f5-4bf35003e819bb138249-nYJLy67qh52/users").unwrap();
-//   update_request_url("GET", &mut request_url, "key", "secret", "1427053326".to_string(), None, None);
-//   assert_eq!(expected, &request_url.serialize())
-// }
-
+#[test]
+fn test_get_users_url() {
+  let expected = "auth_key=key&auth_timestamp=1427053326&auth_version=1.0&auth_signature=15f3d742965b5728ed2089c4fdae186a5684a8a17c9bf230ad5bd244bc8164f7";
+  let query = build_query("GET", "/apps/102015/channels/presence-session-d41a439c438a100756f5-4bf35003e819bb138249-nYJLy67qh52/users", "key", "secret", "1427053326".to_string(), None, None);
+  assert_eq!(expected, query)
+}
