@@ -32,13 +32,12 @@
 //! ```
 
 
-extern crate hyper;
 extern crate crypto;
+extern crate hyper;
+extern crate regex;
 extern crate rustc_serialize as rustc_serialize;
 extern crate time;
-extern crate queryst;
-
-extern crate regex;
+extern crate url;
 
 mod client;
 mod signature;
