@@ -7,6 +7,7 @@ repository = "http://github.com/pusher/pusher-http-rust"
 readme = "README.md"
 license = "MIT"
 keywords = ["realtime", "websockets", "pusher"]
+categories = ["web-programming", "web-programming::http-client"]
 
 [lib]
 name = "pusher"
