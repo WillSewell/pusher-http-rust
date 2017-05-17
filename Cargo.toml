@@ -9,6 +9,9 @@ license = "MIT"
 keywords = ["realtime", "websockets", "pusher"]
 categories = ["web-programming", "web-programming::http-client"]
 
+[badges]
+travis-ci = { repository = "pusher-community/pusher-http-rust", branch = "master" }
+
 [lib]
 name = "pusher"
 path = "src/lib.rs"
