@@ -12,7 +12,7 @@ In order to use this library, you need to have a free account on <http://pusher.
 
 This README is meant to give an overview of the library, but more in-depth documentation can be found on [our GitHub page](http://pusher.github.io/pusher-http-rust/pusher).
 
-###Table of Contents
+### Table of Contents
 
 - [Installation](#installation)
 - [Getting Started](#getting-started)
@@ -108,7 +108,7 @@ It is possible to trigger an event on one or more channels. Channel names can co
 
 #### Single channel
 
-#####`fn trigger<Payload: Encodable>(&mut self, channel: &str, event: &str, payload: Payload)`
+##### `fn trigger<Payload: Encodable>(&mut self, channel: &str, event: &str, payload: Payload)`
 
 |Argument   |Description   |
 |:-:|:-:|
@@ -131,7 +131,7 @@ pusher.trigger("test_channel", "my_event", &hash_map);
 
 #### Multiple channels
 
-#####`fn trigger_multi<Payload: Encodable>(&mut self, channels: &Vec<&str>, event: &str, payload: Payload)`
+##### `fn trigger_multi<Payload: Encodable>(&mut self, channels: &Vec<&str>, event: &str, payload: Payload)`
 
 |Argument | Description |
 |:-:|:-:|
@@ -143,7 +143,7 @@ pusher.trigger("test_channel", "my_event", &hash_map);
 |:-:|:-:|
 |result `Result<TriggeredEvents, String>` | As above. |
 
-######Example
+###### Example
 
 ```rust
 let channels = vec!["test_channel", "test_channel2"];
@@ -157,7 +157,7 @@ pusher.trigger_multi(&channels, "my_event", "hello");
 
 These methods allow you to exclude a recipient whose connection has that `socket_id` from receiving the event. You can read more [here](http://pusher.com/docs/duplicates).
 
-######Examples
+###### Examples
 
 **On one channel**:
 
@@ -195,7 +195,7 @@ For more information see our [docs](http://pusher.com/docs/authenticating_users)
 |:-:|:-:|
 |Result `<String, &str>` | The `Ok` value will be the response to send back to the client, carrying an authentication signature. An `Err` value will be a string describing any errors generated |
 
-######Example Using Nickel.rs
+###### Example Using Nickel.rs
 
 ```rust
 fn pusher_auth<'a>(req: &mut Request, res: Response<'a>) -> MiddlewareResult<'a> {
@@ -294,7 +294,7 @@ pub struct Channel {
     pub subscription_count: Option<i32>,
 }
 ```
-######Example
+###### Example
 
 **Without options**:
 
@@ -471,4 +471,3 @@ This code is free to use under the terms of the MIT license.
 
 * Review the use of different string types.
 * More test coverage
-
