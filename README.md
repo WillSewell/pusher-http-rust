@@ -99,6 +99,16 @@ let pusher = Pusher::new("id", "key", "secret").host("foo.bar.com").finalize();
 
 By default, this is `"api.pusherapp.com"`.
 
+#### Changing cluster
+
+Calling `cluster()` before `finalize()` will make sure requests are sent to your specified cluster.
+
+```rust
+let pusher = Pusher::new("id", "key", "secret").cluster("eu").finalize();
+```
+
+This is not set by default. If set it will create a host like `api-eu.pusher.com`. If you also specify `host`, setting `cluster` will not have any effect.
+
 ## Usage
 
 ### Triggering events

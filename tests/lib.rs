@@ -41,6 +41,20 @@ mock_connector!(ChannelUsersRequest {
                                  {\"users\":[{\"id\":\"red\"},{\"id\":\"blue\"}]}"
 });
 
+mock_connector!(ClusterRequest {
+    "http://api-eu.pusherapp.com" =>       "HTTP/1.1 200 OK\r\n\
+                                 Server: mock1\r\n\
+                                 \r\n\
+                                 {\"users\":[{\"id\":\"red\"},{\"id\":\"blue\"}]}"
+});
+
+mock_connector!(SecureRequest {
+    "https://127.0.0.1" =>       "HTTP/1.1 200 OK\r\n\
+                                 Server: mock1\r\n\
+                                 \r\n\
+                                 {\"users\":[{\"id\":\"red\"},{\"id\":\"blue\"}]}"
+});
+
 #[test]
 fn test_error_response_handler() {
     let client = hyper::Client::with_connector(BadRequest::default());
@@ -48,6 +62,32 @@ fn test_error_response_handler() {
     let query_params = vec![("info", "user_count,subscription_count")];
     let res = pusher.channel_with_options("this_is_not_a_presence_channel", query_params);
     assert_eq!(res.unwrap_err(), "Error: 400 Bad Request. Cannot retrieve the user count unless the channel is a presence channel")
+}
+
+#[test]
+fn test_cluster_builder() {
+    let client = hyper::Client::with_connector(ClusterRequest::default());
+    let mut pusher = Pusher::new("1", "2", "3").client(client).cluster("eu").finalize();
+
+    let res = pusher.channel_users("presence-yolo");
+    let users = res.unwrap().users;
+    let user_one = &users[0];
+    let user_two = &users[1];
+    assert_eq!(user_one.id, "red");
+    assert_eq!(user_two.id, "blue")
+}
+
+#[test]
+fn test_secure() {
+    let client = hyper::Client::with_connector(SecureRequest::default());
+    let mut pusher = Pusher::new("1", "2", "3").client(client).secure().host("127.0.0.1").finalize();
+
+    let res = pusher.channel_users("presence-yolo");
+    let users = res.unwrap().users;
+    let user_one = &users[0];
+    let user_two = &users[1];
+    assert_eq!(user_one.id, "red");
+    assert_eq!(user_two.id, "blue")
 }
 
 #[test]
