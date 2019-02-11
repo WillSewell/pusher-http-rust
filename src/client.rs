@@ -16,17 +16,17 @@ use super::util::*;
 /// authenticate private- or presence-channels, and validate webhooks.
 pub struct Pusher {
   /// Your app_id from <http://app.pusher.com>
-  pub app_id: String, 
+  pub app_id: String,
   /// Your key from <http://app.pusher.com>
-  pub key: String, 
+  pub key: String,
   /// Your secret from <http://app.pusher.com>
-  pub secret: String, 
+  pub secret: String,
   /// The host[:port] you wish to connect to. Defaults to api.pusherapp.com
-  pub host: String, 
+  pub host: String,
   /// If true, requests are made over HTTPS.
-  pub secure: bool, 
+  pub secure: bool,
   /// The underlying Hyper HTTP client.
-  pub http_client: Client, 
+  pub http_client: Client,
 }
 
 /// An ephemeral object upon which to pass configuration options to when
@@ -34,14 +34,14 @@ pub struct Pusher {
 pub struct PusherBuilder {
   pub app_id: String,
   pub key: String,
-  pub secret: String, 
+  pub secret: String,
   pub host: String,
   pub secure: bool,
   pub http_client: Client,
 }
 
 impl PusherBuilder{
-  
+
   /// This method changes the host to which API requests will be made.
   /// This defaults to `api.pusherapp.com`.
   ///
@@ -60,7 +60,7 @@ impl PusherBuilder{
   /// # use pusher::Pusher;
   /// let mut pusher = Pusher::new("id", "key", "secret").secure().finalize();
   /// ```
-  pub fn secure(mut self) -> PusherBuilder {  
+  pub fn secure(mut self) -> PusherBuilder {
     self.secure = true;
     self
   }
@@ -81,7 +81,7 @@ impl PusherBuilder{
       host: self.host,
       secure: self.secure,
       http_client: self.http_client,
-    } 
+    }
   }
 
 }
@@ -90,7 +90,7 @@ impl Pusher{
 
   /// Initializes the client that makes requests to the HTTP API, authenticates
   /// private- or presence-channels, and validates webhooks.
-  /// 
+  ///
   /// This returns a `PusherBuilder`, on which to set configuration options
   /// before calling `finalize()`.
   ///
@@ -121,7 +121,7 @@ impl Pusher{
   /// before calling `finalize()`.
   ///
   /// **Example:**
-  /// 
+  ///
   ///
   /// ```
   /// # use pusher::Pusher;
@@ -162,7 +162,7 @@ impl Pusher{
   ///
   ///
   /// **Example:**
-  /// 
+  ///
   /// ```ignore
   /// # use pusher::Pusher;
   /// Pusher::from_env("PUSHER_URL").finalize();
@@ -177,12 +177,12 @@ impl Pusher{
   /// This method allows you to trigger Pusher events. You can test this out by
   /// going on your debug console at <http://app.pusher.com>.
   ///
-  /// It is possible to trigger an event on one or more channels. Channel names 
+  /// It is possible to trigger an event on one or more channels. Channel names
   /// can contain only characters which are alphanumeric, _ or -` and have to be
-  /// at most 200 characters long. Event name can be at most 200 characters long 
+  /// at most 200 characters long. Event name can be at most 200 characters long
   /// too, and a payload is limited to 10kb.
   ///
-  /// This method is for triggering on only one channel, and does not allow 
+  /// This method is for triggering on only one channel, and does not allow
   /// socket_ids to be passed in for excluding recipients. If you wish to
   /// trigger on multiple channels, use `trigger_multi`. If you wish to exclude
   /// recipients by their socket_id, use `trigger_exclusive`. For doing both,
@@ -190,7 +190,7 @@ impl Pusher{
   ///
   ///
   /// **Example:**
-  /// 
+  ///
   /// ```
   /// # use pusher:: Pusher;
   /// # use std::collections::HashMap;
@@ -201,19 +201,19 @@ impl Pusher{
   /// ```
   ///
   /// If you call this with <http://app.pusher.com> open, you should receive
-  /// an alert saying, 'hello world'. 
+  /// an alert saying, 'hello world'.
   ///
-  /// This method returns a `Result`. If successful, the `Ok` value will be a 
-  /// `TriggeredEvents` instance, which, if you are connected to certain clusters, 
+  /// This method returns a `Result`. If successful, the `Ok` value will be a
+  /// `TriggeredEvents` instance, which, if you are connected to certain clusters,
   /// holds the `event_ids` of published events. If an error has occured,
   /// the `Error` value will contain a `String` regarding what went wrong.
-  pub fn trigger<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload)-> Result<TriggeredEvents, String> {
+  pub fn trigger<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload)-> Result<TriggeredEvents, String> {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, None)
   }
 
-  /// This method allow you to exclude a recipient whose connection has that 
-  /// `socket_id` from receiving the event. You can read more here: 
+  /// This method allow you to exclude a recipient whose connection has that
+  /// `socket_id` from receiving the event. You can read more here:
   /// <http://pusher.com/docs/duplicates>.
   ///
   /// **Example:**
@@ -223,12 +223,12 @@ impl Pusher{
   /// # let mut pusher = Pusher::new("id", "key", "secret").finalize();
   /// pusher.trigger_exclusive("test_channel", "my_event", "hello", "123.12");
   /// ```
-  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&mut self, channel: &str, event: &str, payload: Payload, socket_id: &str)-> Result<TriggeredEvents, String> {
+  pub fn trigger_exclusive<Payload : rustc_serialize::Encodable>(&self, channel: &str, event: &str, payload: Payload, socket_id: &str)-> Result<TriggeredEvents, String> {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, Some(socket_id.to_string()))
   }
 
-  /// This method allow you to trigger an event on multiple channels, with a 
+  /// This method allow you to trigger an event on multiple channels, with a
   /// maximum of 10.
   ///
   ///
@@ -262,12 +262,12 @@ impl Pusher{
     self._trigger(channel_strings, event, payload, Some(socket_id.to_string()))
   }
 
-  fn _trigger<Payload : rustc_serialize::Encodable>(&mut self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) -> Result<TriggeredEvents, String> { 
+  fn _trigger<Payload : rustc_serialize::Encodable>(&self, channels: Vec<String>, event: &str, payload: Payload, socket_id: Option<String>) -> Result<TriggeredEvents, String> {
 
     if event.len() > 200 {
       return Err("Event name is limited to 200 chars".to_string())
     }
-    
+
     if let Err(message) = validate_channels(&channels) {
       return Err(message)
     }
@@ -293,11 +293,11 @@ impl Pusher{
     let method = "POST";
     let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), Some(&body), None);
     request_url.set_query(Some(&query));
-    create_request::<TriggeredEvents>(&mut self.http_client, method, request_url, Some(&body))
+    create_request::<TriggeredEvents>(&self.http_client, method, request_url, Some(&body))
   }
 
   /// One can use this method to get a list of all the channels in an application from the HTTP API.
-  /// 
+  ///
   /// Without any supplied options, all fields for each `Channel` will be `None`.
   /// If you wish to specify options for your query, see the `channels_with_options` method.
   ///
@@ -319,9 +319,9 @@ impl Pusher{
   /// When adding options to your GET channels request, pass in a vector of tuples.
   /// A tuple whose first value is "filter_by_prefix" will filter the returned channels.
   /// To request more information, you can add a tuple beginning with `"info"` to that vector.
-  /// To get number of users subscribed to a presence-channel, pass in a vector 
-  /// with a `("info", "user_count")` tuple. 
-  /// 
+  /// To get number of users subscribed to a presence-channel, pass in a vector
+  /// with a `("info", "user_count")` tuple.
+  ///
   /// An `Err` will be returned for any invalid API requests.
   ///
   /// **Example:**
@@ -344,7 +344,7 @@ impl Pusher{
     let method = "GET";
     let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), None, params);
     request_url.set_query(Some(&query));
-    create_request::<ChannelList>(&mut self.http_client, method, request_url, None)
+    create_request::<ChannelList>(&self.http_client, method, request_url, None)
   }
 
   fn scheme(&self) -> &str {
@@ -356,7 +356,7 @@ impl Pusher{
   }
 
   /// This method gets the state of a single channel.
-  /// 
+  ///
   /// Without any options specified, only the `occupied` field of the `Channel` instance
   /// will have a value. To specify options, see the `channel_with_options` method.
   ///
@@ -376,11 +376,11 @@ impl Pusher{
   }
 
   /// Pass in a vector of tuples to specify options. To request information regarding
-  /// `user_count` and `subscription_count`, a tuple must have an `"info"` value 
+  /// `user_count` and `subscription_count`, a tuple must have an `"info"` value
   /// and a value containing a comma-separated list of attributes.
   ///
   /// An `Err` will be returned for any invalid API requests.
-  /// 
+  ///
   ///
   /// **Example:**
   ///
@@ -402,7 +402,7 @@ impl Pusher{
     let method = "GET";
     let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), None, params);
     request_url.set_query(Some(&query));
-    create_request::<Channel>(&mut self.http_client, method, request_url, None)
+    create_request::<Channel>(&self.http_client, method, request_url, None)
   }
 
   /// This method retrieves the ids of users that are currently subscribed to a
@@ -424,18 +424,18 @@ impl Pusher{
     let method = "GET";
     let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), None, None);
     request_url.set_query(Some(&query));
-    create_request::<ChannelUserList>(&mut self.http_client, method, request_url, None)
+    create_request::<ChannelUserList>(&self.http_client, method, request_url, None)
   }
 
-  /// Application security is very important so Pusher provides a mechanism for 
+  /// Application security is very important so Pusher provides a mechanism for
   /// authenticating a user’s access to a channel at the point of subscription.
-  /// 
-  /// This can be used both to restrict access to private channels, and in the 
+  ///
+  /// This can be used both to restrict access to private channels, and in the
   /// case of presence channels notify subscribers of who else is also subscribed via presence events.
-  /// 
-  /// This library provides a mechanism for generating an authentication signature 
+  ///
+  /// This library provides a mechanism for generating an authentication signature
   /// to send back to the client and authorize them.
-  /// 
+  ///
   /// For more information see our docs: <http://pusher.com/docs/authenticating_users>.
   ///
   /// In order to authenticate a channel, pass in the body sent to your authentication
@@ -458,9 +458,9 @@ impl Pusher{
     self.authenticate_channel(channel_name, socket_id, None)
   }
 
-  /// Using presence channels is similar to private channels, but in order to identify a user, 
+  /// Using presence channels is similar to private channels, but in order to identify a user,
   /// clients are sent a user_id and, optionally, custom data.
-  /// 
+  ///
   /// In this library, one does this by passing a `pusher::Member` instance. The `id` field of this instance
   /// must be a string, and any custom data will be a `HashMap` wrapped in `Some`.
   ///
@@ -506,13 +506,13 @@ impl Pusher{
     Ok(json::encode(&auth_map).unwrap())
   }
 
-  /// On your dashboard at http://app.pusher.com, you can set up webhooks to POST a 
-  /// payload to your server after certain events. Such events include channels being 
-  /// occupied or vacated, members being added or removed in presence-channels, or 
+  /// On your dashboard at http://app.pusher.com, you can set up webhooks to POST a
+  /// payload to your server after certain events. Such events include channels being
+  /// occupied or vacated, members being added or removed in presence-channels, or
   /// after client-originated events. For more information see https://pusher.com/docs/webhooks.
   ///
-  /// This library provides a mechanism for checking that these POST requests are 
-  /// indeed from Pusher, by checking the token and authentication signature in the 
+  /// This library provides a mechanism for checking that these POST requests are
+  /// indeed from Pusher, by checking the token and authentication signature in the
   /// header of the request.
   ///
   /// Pass in the key supplied in the `"X-Pusher-Key"` header, the signature supplied
@@ -550,13 +550,13 @@ fn test_private_channel_authentication(){
 fn test_presence_channel_authentication(){
   let pusher = Pusher::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
   let expected = "{\"auth\":\"278d425bdf160c739803:48dac51d2d7569e1e9c0f48c227d4b26f238fa68e5c0bb04222c966909c4f7c4\",\"channel_data\":\"{\\\"user_id\\\":\\\"10\\\",\\\"user_info\\\":{\\\"name\\\":\\\"Mr. Pusher\\\"}}\"}";
-  let expected_encoded : HashMap<String, String> = json::decode(expected).unwrap(); 
+  let expected_encoded : HashMap<String, String> = json::decode(expected).unwrap();
   let mut member_data = HashMap::new();
   member_data.insert("name", "Mr. Pusher");
   let presence_data = Member{user_id: "10", user_info: Some(member_data)};
   let result_json = pusher.authenticate_presence_channel("presence-foobar", "1234.1234", &presence_data);
   let result_decoded : HashMap<String, String> = json::decode(&result_json.unwrap()).unwrap();
-  
+
   assert_eq!(result_decoded["auth"], expected_encoded["auth"]);
   assert_eq!(result_decoded["channel_data"], expected_encoded["channel_data"]);
 }
@@ -609,14 +609,14 @@ fn test_channel_number_validation(){
 
 #[test]
 fn test_channel_format_validation(){
-  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let pusher = Pusher::new("id", "key", "secret").finalize();
   let res = pusher.trigger("w000^$$£@@@", "yolo", "woot");
   assert_eq!(res.unwrap_err(), "Channels must be formatted as such: ^[-a-zA-Z0-9_=@,.;]+$")
 }
 
 #[test]
 fn test_channel_length_validation(){
-  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let pusher = Pusher::new("id", "key", "secret").finalize();
   let mut channel = "".to_string();
 
   for _ in 1..202 {
@@ -629,7 +629,7 @@ fn test_channel_length_validation(){
 
 #[test]
 fn test_trigger_payload_size_validation(){
-  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let pusher = Pusher::new("id", "key", "secret").finalize();
   let mut data = "".to_string();
 
   for _ in 1..10242 {
@@ -642,7 +642,7 @@ fn test_trigger_payload_size_validation(){
 
 #[test]
 fn test_event_name_length_validation(){
-  let mut pusher = Pusher::new("id", "key", "secret").finalize();
+  let pusher = Pusher::new("id", "key", "secret").finalize();
   let mut event = "".to_string();
 
   for _ in 1..202 {
@@ -671,7 +671,7 @@ fn test_initialization_from_env(){
   assert_eq!(pusher.secret, "secret");
   assert_eq!(pusher.host, "api.host.com");
   assert_eq!(pusher.secure, true);
-  assert_eq!(pusher.app_id, "id") 
+  assert_eq!(pusher.app_id, "id")
 }
 
 

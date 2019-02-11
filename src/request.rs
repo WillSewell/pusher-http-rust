@@ -8,7 +8,7 @@ use rustc_serialize::{self, json};
 use std::io::Read;
 
 
-pub fn create_request<T : rustc_serialize::Decodable>(client: &mut Client, method: &str, request_url: Url, data: Option<&str>) -> Result<T, String> {
+pub fn create_request<T : rustc_serialize::Decodable>(client: &Client, method: &str, request_url: Url, data: Option<&str>) -> Result<T, String> {
   let response = send_request(client, method, request_url, data);
 
   if let Ok(encoded) = response {
@@ -18,7 +18,7 @@ pub fn create_request<T : rustc_serialize::Decodable>(client: &mut Client, metho
   return Err(response.unwrap_err())
 }
 
-pub fn send_request(client: &mut Client, method: &str, request_url: Url, data: Option<&str>) -> Result<String, String> {
+pub fn send_request(client: &Client, method: &str, request_url: Url, data: Option<&str>) -> Result<String, String> {
 
     let request_method = match method {
       "POST" => Method::Post,
