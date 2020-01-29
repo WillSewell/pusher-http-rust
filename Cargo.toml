@@ -17,6 +17,10 @@ travis-ci = { repository = "pusher-community/pusher-http-rust", branch = "master
 name = "pusher"
 path = "src/lib.rs"
 
+[[example]]
+name = "auth_server"
+path = "examples/auth_server.rs"
+
 [dependencies]
 bytes = "0.5"
 hex = "0.4"
