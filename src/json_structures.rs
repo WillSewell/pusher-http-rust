@@ -1,6 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(RustcEncodable)]
+#[derive(Serialize)]
 pub struct TriggerEventData {
     pub name: String,
     pub channels: Vec<String>,
@@ -10,10 +11,10 @@ pub struct TriggerEventData {
 
 /// When querying the state of Pusher channels, you can pass this in to specify
 /// options.
-pub type QueryParameters<'a> = Vec<(&'a str, &'a str)>;
+pub type QueryParameters = Vec<(String, String)>;
 
 /// Any event_ids returned by the HTTP API, if connected to certain clusters.
-#[derive(RustcDecodable, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct TriggeredEvents {
   /// For certain clusters, event_ids will be returned upon triggering.
   /// Otherwise, this value will be `None`.
@@ -21,14 +22,14 @@ pub struct TriggeredEvents {
 }
 
 /// A list of channels returned by the API.
-#[derive(RustcDecodable, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct ChannelList {
     pub channels: HashMap<String, Channel>, // something fishy in practice
 }
 
 /// When authenticating presence-channels, this represents a particular member
 /// of the channel. This object becomes associated with that user's subscription.
-#[derive(RustcEncodable)]
+#[derive(Serialize)]
 pub struct Member<'a> {
   /// Supply an id of the member
   pub user_id: &'a str,
@@ -38,7 +39,7 @@ pub struct Member<'a> {
 
 /// This is returned upon validating that a webhook is indeed from Pusher,
 /// carrying all the data received by that POST request.
-#[derive(RustcDecodable, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct Webhook {
   /// The timestamp of the webhook
   pub time_ms: i64,
@@ -47,7 +48,7 @@ pub struct Webhook {
 }
 
 /// This represents the data received upon querying the state of a Pusher channel.
-#[derive(RustcDecodable, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct Channel {
   /// Is the channel occupied?
   pub occupied: Option<bool>,
@@ -60,13 +61,13 @@ pub struct Channel {
 
 /// The list of users subscribed to a presence channel, as returned by the Pusher
 /// API.
-#[derive(RustcDecodable, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct ChannelUserList {
   pub users: Vec<ChannelUser>,
 }
 
 /// A particular user who occupies a presence channel.
-#[derive(RustcDecodable, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct ChannelUser {
   pub id: String,
 }

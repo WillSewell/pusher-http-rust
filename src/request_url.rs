@@ -1,13 +1,14 @@
-use time;
-use url::form_urlencoded::{Serializer};
+use std::time::SystemTime;
+use url::form_urlencoded::Serializer;
+
 
 use super::json_structures::*;
 use super::signature::*;
 
 const AUTH_VERSION : &'static str = "1.0";
 
-pub fn timestamp() -> String{
-  time::get_time().sec.to_string()
+pub fn timestamp() -> String {
+  SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs().to_string()
 }
 
 pub fn build_query(method: &str, path: &str, key: &str, secret: &str, timestamp: String, data: Option<&str>, query_parameters: Option<QueryParameters>) -> String {
@@ -24,13 +25,15 @@ pub fn build_query(method: &str, path: &str, key: &str, secret: &str, timestamp:
     query_pairs.push(("body_md5", &body_md5));
   }
 
-  if let Some(params) = query_parameters {
-    for param in params {
-      query_pairs.push(param);
-    }
+  let params = match query_parameters {
+    Some(params) => params,
+    None => Vec::new(),
+  };
+  for (k, v) in &params {
+    query_pairs.push((k.as_str(), v.as_str()));
   }
 
-  query_pairs.sort_by(|&(a, _), &(b, _)| { a.cmp(b) });
+  // query_pairs.sort_by(|&(a, _), &(b, _)| { a.cmp(b) });
 
   // Build the query string to sign by hand because we don't want it URL encoded
   let mut query_string_to_sign = String::new();
@@ -71,7 +74,7 @@ fn test_trigger_request_url() {
 #[test]
 fn test_get_channels_url(){
   let expected = "auth_key=key&auth_timestamp=1427034994&auth_version=1.0&filter_by_prefix=presence-&info=user_count&auth_signature=0ba82990cff5311f09d88d8c9317d1ceb1b2e085c01deb65618f4eaea1624d89";
-  let query_parameters = Some(vec![("filter_by_prefix", "presence-"), ("info", "user_count")]);
+  let query_parameters = Some(vec![("filter_by_prefix".to_string(), "presence-".to_string()), ("info".to_string(), "user_count".to_string())]);
   let query = build_query("GET", "/apps/102015/channels", "key", "secret", "1427034994".to_string(), None, query_parameters);
   assert_eq!(expected, query)
 }
@@ -79,7 +82,7 @@ fn test_get_channels_url(){
 #[test]
 fn test_get_channels_url_with_one_additional_param(){
   let expected = "auth_key=key&auth_timestamp=1427036577&auth_version=1.0&filter_by_prefix=presence-&auth_signature=a27c87175390e1748e14fb6531769362ffb1a4fb437e9f353ff09e7fa314ce84";
-  let query_parameters = Some(vec![("filter_by_prefix", "presence-")]);
+  let query_parameters = Some(vec![("filter_by_prefix".to_string(), "presence-".to_string())]);
   let query = build_query("GET", "/apps/102015/channels", "key", "secret", "1427036577".to_string(), None, query_parameters);
   assert_eq!(expected, query)
 }
@@ -94,7 +97,7 @@ fn test_get_channels_url_with_no_params(){
 #[test]
 fn test_get_channel_url(){
   let expected = "auth_key=key&auth_timestamp=1427053326&auth_version=1.0&info=user_count%2Csubscription_count&auth_signature=c39bf2e1ef8a4cbfc8e283daa610862cf01fd250437476e1ff4100677ebd3dab";
-  let query_parameters = Some(vec![("info", "user_count,subscription_count")]);
+  let query_parameters = Some(vec![("info".to_string(), "user_count,subscription_count".to_string())]);
   let query = build_query("GET", "/apps/102015/channels/presence-session-d41a439c438a100756f5-4bf35003e819bb138249-ROpCFmgFhXY", "key", "secret", "1427053326".to_string(), None, query_parameters);
   assert_eq!(expected, query)
 }

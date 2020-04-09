@@ -2,7 +2,7 @@ use crypto::md5::Md5;
 use crypto::digest::Digest;
 use crypto::hmac::Hmac;
 use crypto::sha2::Sha256;
-use rustc_serialize::hex::{ToHex, FromHex};
+use hex::{ToHex, FromHex};
 use crypto::mac::{Mac, MacResult};
 use std::collections::HashMap;
 
@@ -21,7 +21,7 @@ pub fn create_channel_auth<'a>(auth_map: &mut HashMap<&'a str,String>, key: &str
 pub fn check_signature(signature: &str, secret: &str, body: &str) -> bool {
   let mut expected_hmac = Hmac::new(Sha256::new(), secret.as_bytes());
   expected_hmac.input(body.as_bytes());
-  let decoded_signature = signature.from_hex().unwrap();
+  let decoded_signature = Vec::from_hex(signature).unwrap();
   let result = MacResult::new(&decoded_signature);
   result.eq(&expected_hmac.result())
 }
@@ -31,5 +31,5 @@ pub fn create_auth_signature<'a>(to_sign: &str, secret: &'a str) -> String {
   hmac.input(to_sign.as_bytes());
   let result = hmac.result();
   let code = result.code();
-  code.to_hex()
+  code.encode_hex()
 }

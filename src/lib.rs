@@ -19,11 +19,11 @@
 //! ```
 //! extern crate pusher; // imports the `pusher` module
 //! 
-//! use pusher::Pusher; // brings the Pusher struct into scope
+//! use pusher::PusherBuilder; // brings the PusherBuilder struct into scope
 //! 
 //! fn main(){
 //!   // initializes a Pusher object with your app credentials
-//!   let mut pusher = Pusher::new("APP_ID", "KEY", "SECRET").finalize();
+//!   let mut pusher = PusherBuilder::new("APP_ID", "KEY", "SECRET").finalize();
 //! 
 //!   // triggers an event called "my_event" on a channel called "test_channel", with the payload "hello world!"
 //!   pusher.trigger("test_channel", "my_event", "hello world!");
@@ -35,9 +35,7 @@
 extern crate crypto;
 extern crate hyper;
 extern crate regex;
-extern crate rustc_serialize as rustc_serialize;
-extern crate time;
-extern crate url;
+extern crate serde;
 
 mod client;
 mod signature;
