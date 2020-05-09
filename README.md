@@ -54,7 +54,7 @@ use futures::executor::block_on;
 
 fn main(){
   // initializes a Pusher object with your app credentials
-  let mut pusher = PusherBuilder::new("APP_ID", "KEY", "SECRET").finalize();
+  let pusher = PusherBuilder::new("APP_ID", "KEY", "SECRET").finalize();
 
   // triggers an event called "my_event" on a channel called "test_channel", with the payload "hello world!"
   block_on(pusher.trigger("test_channel", "my_event", "hello world!"));
@@ -122,7 +122,7 @@ It is possible to trigger an event on one or more channels. Channel names can co
 
 #### Single channel
 
-##### `async fn trigger<S: serde::Serialize>(&mut self, channel: &str, event: &str, payload: S)`
+##### `async fn trigger<S: serde::Serialize>(&self, channel: &str, event: &str, payload: S)`
 
 |Argument   |Description   |
 |:-:|:-:|
@@ -145,7 +145,7 @@ pusher.trigger("test_channel", "my_event", &hash_map).await;
 
 #### Multiple channels
 
-##### `async fn trigger_multi<S: serde::Serialize>(&mut self, channels: &Vec<&str>, event: &str, payload: S)`
+##### `async fn trigger_multi<S: serde::Serialize>(&self, channels: &Vec<&str>, event: &str, payload: S)`
 
 |Argument | Description |
 |:-:|:-:|
@@ -269,7 +269,7 @@ This library allows you to query our API to retrieve information about your appl
 
 #### Get the list of channels in an application
 
-##### `async fn channels(&mut self)`
+##### `async fn channels(&self)`
 
 Requesting a list of application channels without any query options.
 
@@ -277,7 +277,7 @@ Requesting a list of application channels without any query options.
 |:-:|:-:|
 |result `Result<ChannelList, String>`| The `Ok` value will be a struct representing the list of channels. See below. An `Err` value will represent any errors encountered.|
 
-##### `async fn channels_with_options(&mut self, params: QueryParameters)`
+##### `async fn channels_with_options(&self, params: QueryParameters)`
 
 Adding options to your `channels` request.
 
@@ -328,7 +328,7 @@ pusher.channels_with_options(channels_params).await;
 
 #### Get the state of a single channel
 
-##### `async fn channel(&mut self, channel_name: &str)`
+##### `async fn channel(&self, channel_name: &str)`
 
 Requesting the state of a single channel without any query options.
 
@@ -336,7 +336,7 @@ Requesting the state of a single channel without any query options.
 |:-:|:-:|
 |result `Result<Channel, String>`| The `Ok` value will be a struct representing a channel. See above. An `Err` value will represent any errors encountered.|
 
-##### `async fn channel_with_options(&mut self, channel_name: &str, params: QueryParameters)`
+##### `async fn channel_with_options(&self, channel_name: &str, params: QueryParameters)`
 
 Adding options to your `channel` request.
 
@@ -368,7 +368,7 @@ pusher.channel_with_options("presence-chatroom", channel_params).await;
 
 #### Get a list of users in a presence channel
 
-##### `async fn channel_users(&mut self, channel_name : &str)`
+##### `async fn channel_users(&self, channel_name : &str)`
 
 |Argument|Description|
 |:-:|:-:|
@@ -407,14 +407,14 @@ pusher.channel_users("presence-chatroom").await;
 
 On your [dashboard](http://app.pusher.com), you can set up webhooks to POST a payload to your server after certain events. Such events include channels being occupied or vacated, members being added or removed in presence-channels, or after client-originated events. For more information see <https://pusher.com/docs/webhooks>.
 
-This library provides a mechanism for checking that these POST requests are indeed from Pusher, by checking the token and authentication signature in the header of the request. 
+This library provides a mechanism for checking that these POST requests are indeed from Pusher, by checking the token and authentication signature in the header of the request.
 
 ##### `fn webhook(&self, key: &String, signature: &String, body: &str)`
 
 |Argument|Description|
 |:-:|:-:|
 |key `&String` | The key supplied in the "X-Pusher-Key" header |
-|signature `&String` | The signature supplied in the "X-Pusher-Signature" header | 
+|signature `&String` | The signature supplied in the "X-Pusher-Signature" header |
 |body `&str` | The body of the request |
 
 |Return Value|Description|
