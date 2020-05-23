@@ -109,7 +109,7 @@ impl<C> PusherBuilder<C> {
             secret: secret.to_string(),
             host: "api.pusherapp.com".to_string(),
             secure: false,
-            http_client: http_client,
+            http_client,
         }
     }
 
@@ -123,19 +123,15 @@ impl<C> PusherBuilder<C> {
         let host = pusher_url.host().unwrap();
         let v: Vec<&str> = pusher_url.path_segments().unwrap().collect();
         let app_id = v[1];
-        let mut secure = false;
-
-        if pusher_url.scheme() == "https" {
-            secure = true;
-        }
+        let secure = pusher_url.scheme() == "https";
 
         PusherBuilder {
             app_id: app_id.to_string(),
             key: key.to_string(),
             secret: secret.to_string(),
             host: host.to_string(),
-            secure: secure,
-            http_client: http_client,
+            secure,
+            http_client,
         }
     }
 
@@ -272,11 +268,11 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     /// ```
     pub async fn trigger_multi<S: serde::Serialize>(
         &self,
-        channels: &Vec<&str>,
+        channels: &[&str],
         event: &str,
         payload: S,
     ) -> Result<TriggeredEvents, String> {
-        let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
+        let channel_strings = channels.iter().map(|c| (*c).to_string()).collect();
         self._trigger(channel_strings, event, payload, None).await
     }
 
@@ -294,12 +290,12 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     /// ```
     pub async fn trigger_multi_exclusive<S: serde::Serialize>(
         &self,
-        channels: &Vec<&str>,
+        channels: &[&str],
         event: &str,
         payload: S,
         socket_id: &str,
     ) -> Result<TriggeredEvents, String> {
-        let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
+        let channel_strings = channels.iter().map(|c| (*c).to_string()).collect();
         self._trigger(channel_strings, event, payload, Some(socket_id.to_string()))
             .await
     }
@@ -331,9 +327,9 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
 
         let raw_body = TriggerEventData {
             name: event.to_string(),
-            channels: channels,
+            channels,
             data: json_payload,
-            socket_id: socket_id,
+            socket_id,
         };
 
         let body = serde_json::to_string(&raw_body).unwrap();
@@ -654,8 +650,8 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
     /// pusher.webhook("supplied_key", "supplied_signature", "body")
     /// ```
-    pub fn webhook(&self, key: &String, signature: &String, body: &str) -> Result<Webhook, &str> {
-        if (&self.key == key) && check_signature(signature, &self.secret, body) {
+    pub fn webhook(&self, key: &str, signature: &str, body: &str) -> Result<Webhook, &str> {
+        if self.key == key && check_signature(signature, &self.secret, body) {
             let decoded_webhook: Webhook = serde_json::from_str(&body[..]).unwrap();
             return Ok(decoded_webhook);
         }
