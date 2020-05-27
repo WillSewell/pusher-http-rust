@@ -23,7 +23,7 @@
 //! 
 //! fn main(){
 //!   // initializes a Pusher object with your app credentials
-//!   let mut pusher = PusherBuilder::new("APP_ID", "KEY", "SECRET").finalize();
+//!   let pusher = PusherBuilder::new("APP_ID", "KEY", "SECRET").finalize();
 //! 
 //!   // triggers an event called "my_event" on a channel called "test_channel", with the payload "hello world!"
 //!   pusher.trigger("test_channel", "my_event", "hello world!");
