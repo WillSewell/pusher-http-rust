@@ -1,6 +1,6 @@
 [package]
 name = "pusher"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["Jamie Patel <jamie@pusher.com>"]
 description = "The Rust library for interacting with the Pusher HTTP API."
 repository = "http://github.com/pusher/pusher-http-rust"
