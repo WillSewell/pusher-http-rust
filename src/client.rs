@@ -12,7 +12,6 @@ use super::request_url::*;
 use super::json_structures::*;
 use super::util::*;
 
-
 /// A client to interact with Pusher's HTTP API to trigger, query application state,
 /// authenticate private- or presence-channels, and validate webhooks.
 pub struct Pusher<C> {
@@ -53,7 +52,7 @@ impl PusherBuilder<HttpConnector> {
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// let mut pusher = PusherBuilder::new("id", "key", "secret").host("foo.bar.com").finalize();
+  /// let pusher = PusherBuilder::new("id", "key", "secret").host("foo.bar.com").finalize();
   /// ```
   pub fn new(app_id: &str, key: &str, secret: &str) -> PusherBuilder<HttpConnector> {
     let http_client = Client::new();
@@ -149,7 +148,7 @@ impl<C> PusherBuilder<C> {
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// let mut pusher = PusherBuilder::new("id", "key", "secret").host("foo.bar.com").finalize();
+  /// let pusher = PusherBuilder::new("id", "key", "secret").host("foo.bar.com").finalize();
   /// ```
   pub fn host(mut self, host: &str) -> PusherBuilder<C> {
     self.host = host.to_string();
@@ -160,7 +159,7 @@ impl<C> PusherBuilder<C> {
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// let mut pusher = PusherBuilder::new("id", "key", "secret").secure().finalize();
+  /// let pusher = PusherBuilder::new("id", "key", "secret").secure().finalize();
   /// ```
   pub fn secure(mut self) -> PusherBuilder<C> {
     self.secure = true;
@@ -185,7 +184,6 @@ impl<C> PusherBuilder<C> {
       http_client: self.http_client,
     } 
   }
-
 }
 
 impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
@@ -209,7 +207,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   /// ```
   /// # use pusher::PusherBuilder;
   /// # use std::collections::HashMap;
-  /// # let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+  /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
   /// let mut hash_map = HashMap::new();
   /// hash_map.insert("message", "hello world");
   /// pusher.trigger("test_channel", "my_event", &hash_map);
@@ -222,7 +220,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   /// `TriggeredEvents` instance, which, if you are connected to certain clusters, 
   /// holds the `event_ids` of published events. If an error has occured,
   /// the `Error` value will contain a `String` regarding what went wrong.
-  pub async fn trigger<S: serde::Serialize>(&mut self, channel: &str, event: &str, payload: S)-> Result<TriggeredEvents, String> {
+  pub async fn trigger<S: serde::Serialize>(&self, channel: &str, event: &str, payload: S) -> Result<TriggeredEvents, String> {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, None).await
   }
@@ -235,10 +233,10 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// # let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+  /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
   /// pusher.trigger_exclusive("test_channel", "my_event", "hello", "123.12");
   /// ```
-  pub async fn trigger_exclusive<S: serde::Serialize>(&mut self, channel: &str, event: &str, payload: S, socket_id: &str)-> Result<TriggeredEvents, String> {
+  pub async fn trigger_exclusive<S: serde::Serialize>(&self, channel: &str, event: &str, payload: S, socket_id: &str) -> Result<TriggeredEvents, String> {
     let channels = vec![channel.to_string()];
     self._trigger(channels, event, payload, Some(socket_id.to_string())).await
   }
@@ -251,11 +249,11 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// # let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+  /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
   /// let channels = vec!["test_channel", "test_channel2"];
   /// pusher.trigger_multi(&channels, "my_event", "hello");
   /// ```
-  pub async fn trigger_multi<S: serde::Serialize>(&mut self, channels: &Vec<&str>, event: &str, payload: S)-> Result<TriggeredEvents, String> {
+  pub async fn trigger_multi<S: serde::Serialize>(&self, channels: &Vec<&str>, event: &str, payload: S) -> Result<TriggeredEvents, String> {
     let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
     self._trigger(channel_strings, event, payload, None).await
   }
@@ -268,21 +266,20 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// # let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+  /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
   /// let channels = vec!["test_channel", "test_channel2"];
   /// pusher.trigger_multi_exclusive(&channels, "my_event", "hello", "123.12");
   /// ```
-  pub async fn trigger_multi_exclusive<S: serde::Serialize>(&mut self, channels: &Vec<&str>, event: &str, payload: S, socket_id: &str)-> Result<TriggeredEvents, String> {
+  pub async fn trigger_multi_exclusive<S: serde::Serialize>(&self, channels: &Vec<&str>, event: &str, payload: S, socket_id: &str) -> Result<TriggeredEvents, String> {
     let channel_strings = channels.into_iter().map(|c| c.to_string()).collect();
     self._trigger(channel_strings, event, payload, Some(socket_id.to_string())).await
   }
 
-  async fn _trigger<S: serde::Serialize>(&mut self, channels: Vec<String>, event: &str, payload: S, socket_id: Option<String>) -> Result<TriggeredEvents, String> {
-
+  async fn _trigger<S: serde::Serialize>(&self, channels: Vec<String>, event: &str, payload: S, socket_id: Option<String>) -> Result<TriggeredEvents, String> {
     if event.len() > 200 {
       return Err("Event name is limited to 200 chars".to_string())
     }
-    
+
     if let Err(message) = validate_channels(&channels) {
       return Err(message)
     }
@@ -308,7 +305,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
     let method = "POST";
     let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), Some(&body), None);
     request_url.set_query(Some(&query));
-    send_request::<C, TriggeredEvents>(&mut self.http_client, method, request_url, Some(body)).await
+    send_request::<C, TriggeredEvents>(&self.http_client, method, request_url, Some(body)).await
   }
 
   /// One can use this method to get a list of all the channels in an application from the HTTP API.
@@ -323,11 +320,11 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// # let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+  /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
   /// pusher.channels();
   /// //=> Ok(ChannelList { channels: {"presence-chatroom": Channel { occupied: None, user_count: None, subscription_count: None }, "presence-notifications": Channel { occupied: None, user_count: None, subscription_count: None }} })
   /// ```
-  pub async fn channels(&mut self) -> Result<ChannelList, String> {
+  pub async fn channels(&self) -> Result<ChannelList, String> {
     self._channels(None).await
   }
 
@@ -344,22 +341,22 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// # let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+  /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
   /// let channels_params = vec![("filter_by_prefix".to_string(), "presence-".to_string()), ("info".to_string(), "user_count".to_string())];
   /// pusher.channels_with_options(channels_params);
   /// //=> Ok(ChannelList { channels: {"presence-chatroom": Channel { occupied: None, user_count: Some(92), subscription_count: None }, "presence-notifications": Channel { occupied: None, user_count: Some(29), subscription_count: None }} })
   /// ```
-  pub async fn channels_with_options(&mut self, params: QueryParameters) -> Result<ChannelList, String> {
+  pub async fn channels_with_options(&self, params: QueryParameters) -> Result<ChannelList, String> {
     self._channels(Some(params)).await
   }
 
-  async fn _channels(&mut self, params: Option<QueryParameters>) -> Result<ChannelList, String>{
+  async fn _channels(&self, params: Option<QueryParameters>) -> Result<ChannelList, String> {
     let request_url_string = format!("{}://{}/apps/{}/channels", self.scheme(), self.host, self.app_id);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), None, params);
     request_url.set_query(Some(&query));
-    send_request::<C, ChannelList>(&mut self.http_client, method, request_url, None).await
+    send_request::<C, ChannelList>(&self.http_client, method, request_url, None).await
   }
 
   fn scheme(&self) -> &str {
@@ -382,16 +379,16 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// # let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+  /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
   /// pusher.channel("presence-chatroom");
   /// //=> Ok(Channel { occupied: Some(true), user_count: None, subscription_count: None })
   /// ```
-  pub async fn channel(&mut self, channel_name: &str) -> Result<Channel, String>{
+  pub async fn channel(&self, channel_name: &str) -> Result<Channel, String> {
     self._channel(channel_name, None).await
   }
 
   /// Pass in a vector of tuples to specify options. To request information regarding
-  /// `user_count` and `subscription_count`, a tuple must have an `"info"` value 
+  /// `user_count` and `subscription_count`, a tuple must have an `"info"` value
   /// and a value containing a comma-separated list of attributes.
   ///
   /// An `Err` will be returned for any invalid API requests.
@@ -402,22 +399,22 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// # let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+  /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
   /// let channel_params = vec![("info".to_string(), "user_count,subscription_count".to_string())];
   /// pusher.channel_with_options("presence-chatroom", channel_params);
   /// //=> Ok(Channel { occupied: Some(true), user_count: Some(96), subscription_count: Some(96) })
   /// ```
-  pub async fn channel_with_options(&mut self, channel_name: &str, params: QueryParameters) -> Result<Channel, String> {
+  pub async fn channel_with_options(&self, channel_name: &str, params: QueryParameters) -> Result<Channel, String> {
     self._channel(channel_name, Some(params)).await
   }
 
-  async fn _channel(&mut self, channel_name: &str, params: Option<QueryParameters>) -> Result<Channel, String>{
+  async fn _channel(&self, channel_name: &str, params: Option<QueryParameters>) -> Result<Channel, String> {
     let request_url_string = format!("{}://{}/apps/{}/channels/{}", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), None, params);
     request_url.set_query(Some(&query));
-    send_request::<C, Channel>(&mut self.http_client, method, request_url, None).await
+    send_request::<C, Channel>(&self.http_client, method, request_url, None).await
   }
 
   /// This method retrieves the ids of users that are currently subscribed to a
@@ -429,17 +426,17 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   ///
   /// ```
   /// # use pusher::PusherBuilder;
-  /// # let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+  /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
   /// pusher.channel_users("presence-chatroom");
   /// //=> Ok(ChannelUserList { users: [ChannelUser { id: "red" }, ChannelUser { id: "blue" }] })
   /// ```
-  pub async fn channel_users(&mut self, channel_name : &str) -> Result<ChannelUserList, String> {
+  pub async fn channel_users(&self, channel_name: &str) -> Result<ChannelUserList, String> {
     let request_url_string = format!("{}://{}/apps/{}/channels/{}/users", self.scheme(), self.host, self.app_id, channel_name);
     let mut request_url = Url::parse(&request_url_string).unwrap();
     let method = "GET";
     let query = build_query(method, request_url.path(), &self.key, &self.secret, timestamp(), None, None);
     request_url.set_query(Some(&query));
-    send_request::<C, ChannelUserList>(&mut self.http_client, method, request_url, None).await
+    send_request::<C, ChannelUserList>(&self.http_client, method, request_url, None).await
   }
 
   /// Application security is very important so Pusher provides a mechanism for 
@@ -540,7 +537,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C>{
   ///
   /// ```ignore
   /// # use pusher::PusherBuilder;
-  /// # let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+  /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
   /// pusher.webhook("supplied_key", "supplied_signature", "body")
   /// ```
   pub fn webhook(&self, key: &String, signature: &String, body: &str) -> Result<Webhook, &str> {
@@ -622,7 +619,7 @@ mod tests {
 
   #[tokio::test]
   async fn test_channel_number_validation(){
-    let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+    let pusher = PusherBuilder::new("id", "key", "secret").finalize();
     let channels = vec!["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"];
     let res = pusher.trigger_multi(&channels, "yolo", "woot").await;
     assert_eq!(res.unwrap_err(), "Cannot trigger on more than 10 channels")
@@ -630,14 +627,14 @@ mod tests {
 
   #[tokio::test]
   async fn test_channel_format_validation(){
-    let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+    let pusher = PusherBuilder::new("id", "key", "secret").finalize();
     let res = pusher.trigger("w000^$$£@@@", "yolo", "woot").await;
     assert_eq!(res.unwrap_err(), "Channels must be formatted as such: ^[-a-zA-Z0-9_=@,.;]+$")
   }
 
   #[tokio::test]
   async fn test_channel_length_validation(){
-    let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+    let pusher = PusherBuilder::new("id", "key", "secret").finalize();
     let mut channel = "".to_string();
 
     for _ in 1..202 {
@@ -650,7 +647,7 @@ mod tests {
 
   #[tokio::test]
   async fn test_trigger_payload_size_validation(){
-    let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+    let pusher = PusherBuilder::new("id", "key", "secret").finalize();
     let mut data = "".to_string();
 
     for _ in 1..10242 {
@@ -663,7 +660,7 @@ mod tests {
 
   #[tokio::test]
   async fn test_event_name_length_validation(){
-    let mut pusher = PusherBuilder::new("id", "key", "secret").finalize();
+    let pusher = PusherBuilder::new("id", "key", "secret").finalize();
     let mut event = "".to_string();
 
     for _ in 1..202 {

@@ -7,7 +7,7 @@ use std::io::Read;
 use std::str::FromStr;
 
 pub async fn send_request<C, T>(
-  client: &mut Client<C>,
+  client: &Client<C>,
   method: &str,
   request_url: url::Url,
   data: Option<String>

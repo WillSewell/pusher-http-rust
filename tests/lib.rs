@@ -46,7 +46,7 @@ mock_connector!(ChannelUsersRequest {
 #[tokio::test]
 async fn test_error_response_handler() {
     let client = Client::builder().build(BadRequest::default());
-    let mut pusher = PusherBuilder::new_with_client(client, "1", "2", "3").host("127.0.0.1").finalize();
+    let pusher = PusherBuilder::new_with_client(client, "1", "2", "3").host("127.0.0.1").finalize();
     let query_params = vec![("info".to_string(), "user_count,subscription_count".to_string())];
     let res = pusher.channel_with_options("this_is_not_a_presence_channel", query_params).await;
     assert_eq!(res.unwrap_err(), "Error: 400 Bad Request. Cannot retrieve the user count unless the channel is a presence channel")
@@ -55,20 +55,19 @@ async fn test_error_response_handler() {
 #[tokio::test]
 async fn test_eb_trigger(){
   let client = Client::builder().build(TriggerEBTest::default());
-  let mut pusher = PusherBuilder::new_with_client(client, "1", "2", "3").host("127.0.0.1").finalize();
+  let pusher = PusherBuilder::new_with_client(client, "1", "2", "3").host("127.0.0.1").finalize();
   let res = pusher.trigger("woot", "yolo", "huh").await;
   let events = res.unwrap();
   println!("{:?}", events);
   let event_id = events.event_ids.unwrap();
 
   assert_eq!(event_id.get("test_channel").unwrap(), "eudhq1809scss2")
-
 }
 
 #[tokio::test]
 async fn test_get_channels(){
   let client = Client::builder().build(ChannelsRequest::default());
-  let mut pusher = PusherBuilder::new_with_client(client, "1", "2", "3").host("127.0.0.1").finalize();
+  let pusher = PusherBuilder::new_with_client(client, "1", "2", "3").host("127.0.0.1").finalize();
   let res = pusher.channels().await;
   let channels = res.unwrap();
   let item = channels.channels.get("presence-session-d41a439c438a100756f5-4bf35003e819bb138249-5cbTiUiPNGI").unwrap();
@@ -78,7 +77,7 @@ async fn test_get_channels(){
 #[tokio::test]
 async fn test_get_channel(){
   let client = Client::builder().build(ChannelRequest::default());
-  let mut pusher = PusherBuilder::new_with_client(client, "1", "2", "3").host("127.0.0.1").finalize();
+  let pusher = PusherBuilder::new_with_client(client, "1", "2", "3").host("127.0.0.1").finalize();
   let res = pusher.channel("presence-for-all").await;
   let channel = res.unwrap();
   let user_count = channel.user_count.unwrap();
@@ -92,7 +91,7 @@ async fn test_get_channel(){
 #[tokio::test]
 async fn test_get_channel_users(){
    let client = Client::builder().build(ChannelUsersRequest::default());
-   let mut pusher = PusherBuilder::new_with_client(client, "1", "2", "3").host("127.0.0.1").finalize();
+   let pusher = PusherBuilder::new_with_client(client, "1", "2", "3").host("127.0.0.1").finalize();
    let res = pusher.channel_users("presence-yolo").await;
    let users = res.unwrap().users;
    let user_one = &users[0];
