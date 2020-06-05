@@ -145,11 +145,11 @@ pusher.trigger("test_channel", "my_event", &hash_map).await;
 
 #### Multiple channels
 
-##### `async fn trigger_multi<S: serde::Serialize>(&self, channels: &Vec<&str>, event: &str, payload: S)`
+##### `async fn trigger_multi<S: serde::Serialize>(&self, channels: &[&str], event: &str, payload: S)`
 
 |Argument | Description |
 |:-:|:-:|
-|channels `&Vec<&str>`| A vector of channel names you wish to send an event on. The maximum length is 10.|
+|channels `&[&str]`| A vector of channel names you wish to send an event on. The maximum length is 10.|
 |event `&str` | As above.|
 |data `S: serde::Serialize` |As above.|
 
@@ -409,12 +409,12 @@ On your [dashboard](http://app.pusher.com), you can set up webhooks to POST a pa
 
 This library provides a mechanism for checking that these POST requests are indeed from Pusher, by checking the token and authentication signature in the header of the request.
 
-##### `fn webhook(&self, key: &String, signature: &String, body: &str)`
+##### `fn webhook(&self, key: &str, signature: &str, body: &str)`
 
 |Argument|Description|
 |:-:|:-:|
-|key `&String` | The key supplied in the "X-Pusher-Key" header |
-|signature `&String` | The signature supplied in the "X-Pusher-Signature" header |
+|key `&str` | The key supplied in the "X-Pusher-Key" header |
+|signature `&str` | The signature supplied in the "X-Pusher-Signature" header |
 |body `&str` | The body of the request |
 
 |Return Value|Description|

@@ -16,9 +16,9 @@ pub type QueryParameters = Vec<(String, String)>;
 /// Any event_ids returned by the HTTP API, if connected to certain clusters.
 #[derive(Deserialize, Debug)]
 pub struct TriggeredEvents {
-  /// For certain clusters, event_ids will be returned upon triggering.
-  /// Otherwise, this value will be `None`.
-  pub event_ids: Option<HashMap<String, String>>
+    /// For certain clusters, event_ids will be returned upon triggering.
+    /// Otherwise, this value will be `None`.
+    pub event_ids: Option<HashMap<String, String>>,
 }
 
 /// A list of channels returned by the API.
@@ -31,43 +31,43 @@ pub struct ChannelList {
 /// of the channel. This object becomes associated with that user's subscription.
 #[derive(Serialize)]
 pub struct Member<'a> {
-  /// Supply an id of the member
-  pub user_id: &'a str,
-  /// Supply any optional information to be associated with the member
-  pub user_info: Option<HashMap<&'a str, &'a str>>
+    /// Supply an id of the member
+    pub user_id: &'a str,
+    /// Supply any optional information to be associated with the member
+    pub user_info: Option<HashMap<&'a str, &'a str>>,
 }
 
 /// This is returned upon validating that a webhook is indeed from Pusher,
 /// carrying all the data received by that POST request.
 #[derive(Deserialize, Debug)]
 pub struct Webhook {
-  /// The timestamp of the webhook
-  pub time_ms: i64,
-  /// The events received with the webhook
-  pub events: Vec<HashMap<String, String>>,
+    /// The timestamp of the webhook
+    pub time_ms: i64,
+    /// The events received with the webhook
+    pub events: Vec<HashMap<String, String>>,
 }
 
 /// This represents the data received upon querying the state of a Pusher channel.
 #[derive(Deserialize, Debug)]
 pub struct Channel {
-  /// Is the channel occupied?
-  pub occupied: Option<bool>,
-  /// The number of users presently subscribed to the channel
-  pub user_count: Option<i32>,
-  /// For accounts with subscription-counting enabled, the number of users currently
-  /// subscribed to the channel.
-  pub subscription_count: Option<i32>,
+    /// Is the channel occupied?
+    pub occupied: Option<bool>,
+    /// The number of users presently subscribed to the channel
+    pub user_count: Option<i32>,
+    /// For accounts with subscription-counting enabled, the number of users currently
+    /// subscribed to the channel.
+    pub subscription_count: Option<i32>,
 }
 
 /// The list of users subscribed to a presence channel, as returned by the Pusher
 /// API.
 #[derive(Deserialize, Debug)]
 pub struct ChannelUserList {
-  pub users: Vec<ChannelUser>,
+    pub users: Vec<ChannelUser>,
 }
 
 /// A particular user who occupies a presence channel.
 #[derive(Deserialize, Debug)]
 pub struct ChannelUser {
-  pub id: String,
+    pub id: String,
 }
