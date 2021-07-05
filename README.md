@@ -1,8 +1,8 @@
 # Pusher HTTP Rust Library
 
-[![Build Status](https://travis-ci.org/pusher-community/pusher-http-rust.svg?branch=master)](https://travis-ci.org/pusher-community/pusher-http-rust)
-[![Coverage Status](https://coveralls.io/repos/pusher/pusher-http-rust/badge.svg?branch=master)](https://coveralls.io/r/pusher/pusher-http-rust?branch=master)
-[![Crates Badge](http://meritbadge.herokuapp.com/pusher)](https://crates.io/crates/pusher)
+[![Build Status](https://github.com/pusher-community/pusher-http-rust/workflows/Tests/badge.svg)](https://github.com/pusher-community/pusher-http-rust/actions)
+[![Crates Badge](https://img.shields.io/crates/v/pusher)](https://crates.io/crates/pusher)
+[![Docs.rs Badge](https://docs.rs/pusher/badge.svg)](https://docs.rs/pusher/)
 
 The Rust library for interacting with the Pusher HTTP API.
 
@@ -11,8 +11,6 @@ This package lets you trigger events to your client and query the state of your 
 The functions that make HTTP requests are [async](https://rust-lang.github.io/async-book/), so you will need to run them with an executer like [tokio](https://tokio.rs/). The library is a wrapper around the [hyper](https://hyper.rs/) client.
 
 In order to use this library, you need to have a free account on <http://pusher.com>. After registering, you will need the application credentials for your app.
-
-This README is meant to give an overview of the library, but more in-depth documentation can be found on [our GitHub page](http://pusher-community.github.io/pusher-http-rust/pusher/).
 
 ## Table of Contents
 
