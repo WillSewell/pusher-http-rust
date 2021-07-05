@@ -1,4 +1,4 @@
-use bytes::buf::BufExt;
+use bytes::Buf;
 use hyper::body;
 use hyper::client::connect::Connect;
 use hyper::header::CONTENT_TYPE;

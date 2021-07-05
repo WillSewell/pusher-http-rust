@@ -22,16 +22,16 @@ name = "auth_server"
 path = "examples/auth_server.rs"
 
 [dependencies]
-bytes = "0.5"
+bytes = "1.0"
 hex = "0.4"
-hyper = "0.13"
-regex = "1.3"
+hyper = { version = "0.14", features = ["server"] }
+regex = "1.5"
 rust-crypto = "0.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-url = "2.1"
+url = "2.2"
 
 [dev-dependencies]
 log = "0.4" # log macros are used within yup-hyper-mock
-tokio = { version = "0.2", features = ["macros", "rt-threaded"] }
-yup-hyper-mock = "4.0.0"
+tokio = { version = "1.8", features = ["macros", "rt"] }
+yup-hyper-mock = "5.14"

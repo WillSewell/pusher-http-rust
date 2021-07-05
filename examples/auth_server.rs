@@ -6,14 +6,15 @@ extern crate tokio;
 extern crate url;
 
 use hyper::body::to_bytes;
+use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Error, Request, Response, Server};
+use hyper::{Body, Error, Request, Response};
 use pusher::PusherBuilder;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use url::form_urlencoded::parse;
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
