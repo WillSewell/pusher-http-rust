@@ -31,7 +31,6 @@
 //! }
 //! ```
 
-extern crate crypto;
 extern crate hyper;
 extern crate regex;
 extern crate serde;
