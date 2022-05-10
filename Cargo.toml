@@ -25,7 +25,7 @@ path = "examples/auth_server.rs"
 bytes = "1.0"
 hex = "0.4"
 hmac = "0.12"
-hyper = { version = "0.14", features = ["server"] }
+hyper = { version = "0.14", features = ["client", "http1", "http2", "runtime", "server"] }
 md-5 = "0.10"
 regex = "1.5"
 serde = { version = "1.0", features = ["derive"] }
