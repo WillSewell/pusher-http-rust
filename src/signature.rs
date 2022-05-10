@@ -1,15 +1,16 @@
-use crypto::digest::Digest;
-use crypto::hmac::Hmac;
-use crypto::mac::{Mac, MacResult};
-use crypto::md5::Md5;
-use crypto::sha2::Sha256;
+use hmac::{Hmac, Mac};
+use md5::{Md5, Digest};
+use sha2::Sha256;
 use hex::{FromHex, ToHex};
 use std::collections::HashMap;
 
+type HmacSha256 = Hmac<Sha256>;
+
 pub fn create_body_md5(body: &str) -> String {
     let mut sh = Md5::new();
-    sh.input_str(body);
-    sh.result_str()
+    sh.update(body.as_bytes());
+    let result = sh.finalize();
+    result.encode_hex()
 }
 
 pub fn create_channel_auth<'a>(
@@ -24,17 +25,16 @@ pub fn create_channel_auth<'a>(
 }
 
 pub fn check_signature(signature: &str, secret: &str, body: &str) -> bool {
-    let mut expected_hmac = Hmac::new(Sha256::new(), secret.as_bytes());
-    expected_hmac.input(body.as_bytes());
+    let mut hmac = HmacSha256::new_from_slice(secret.as_bytes()).expect("HMAC can take key of any size");
+    hmac.update(body.as_bytes());
     let decoded_signature = Vec::from_hex(signature).unwrap();
-    let result = MacResult::new(&decoded_signature);
-    result.eq(&expected_hmac.result())
+    hmac.verify_slice(&decoded_signature).is_ok()
 }
 
 pub fn create_auth_signature<'a>(to_sign: &str, secret: &'a str) -> String {
-    let mut hmac = Hmac::new(Sha256::new(), secret.as_bytes());
-    hmac.input(to_sign.as_bytes());
-    let result = hmac.result();
-    let code = result.code();
+    let mut hmac = HmacSha256::new_from_slice(secret.as_bytes()).expect("HMAC can take key of any size");
+    hmac.update(to_sign.as_bytes());
+    let result = hmac.finalize();
+    let code = result.into_bytes();
     code.encode_hex()
 }
