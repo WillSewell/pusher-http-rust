@@ -21,13 +21,19 @@
 //!
 //! use pusher::PusherBuilder; // brings the PusherBuilder struct into scope
 //!
-//! fn main(){
+//! // the functions are async, so we need a reactor running (e.g. tokio)
+//! // this example uses "current_thread" for simplicity
+//! #[tokio::main(flavor = "current_thread")]
+//! async fn main() {
 //!   // initializes a Pusher object with your app credentials
 //!   let pusher = PusherBuilder::new("APP_ID", "KEY", "SECRET").finalize();
 //!
 //!   // triggers an event called "my_event" on a channel called "test_channel", with the payload "hello world!"
-//!   pusher.trigger("test_channel", "my_event", "hello world!");
-//!
+//!   let result = pusher.trigger("test_channel", "my_event", "hello world!").await;
+//!   match result {
+//!     Ok(events) => println!("Successfully published: {:?}", events),
+//!     Err(err) => println!("Failed to publish: {}", err),
+//!   }
 //! }
 //! ```
 
