@@ -35,5 +35,5 @@ url = "2.3"
 
 [dev-dependencies]
 log = "0.4" # log macros are used within yup-hyper-mock
-tokio = { version = "1.21", features = ["macros", "rt"] }
+tokio = { version = "1.24", features = ["macros", "rt"] }
 yup-hyper-mock = "6.0"
