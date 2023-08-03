@@ -42,6 +42,7 @@ extern crate regex;
 extern crate serde;
 
 mod client;
+mod error;
 mod json_structures;
 mod request;
 mod request_url;
@@ -49,7 +50,8 @@ mod signature;
 mod util;
 
 pub use self::client::{Pusher, PusherBuilder};
+pub use self::error::Error;
 pub use self::json_structures::{
-    Channel, ChannelList, ChannelUser, ChannelUserList, Member, QueryParameters, TriggeredEvents,
-    Webhook,
+    Channel, ChannelAuthResponse, ChannelList, ChannelUser, ChannelUserList, Member,
+    QueryParameters, TriggeredEvents, User, UserAuthResponse, Webhook,
 };

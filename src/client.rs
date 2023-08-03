@@ -1,16 +1,20 @@
 use hyper::client::connect::Connect;
 use hyper::client::HttpConnector;
 use hyper::Client;
-use regex::Regex;
-use std::collections::HashMap;
 use std::env;
+use std::fmt::Debug;
 use url::Url;
+
+use crate::Error;
 
 use super::json_structures::*;
 use super::request::*;
 use super::request_url::*;
 use super::signature::*;
 use super::util::*;
+
+#[cfg(feature = "rustls")]
+mod rustls;
 
 /// A client to interact with Pusher's HTTP API to trigger, query application state,
 /// authenticate private- or presence-channels, and validate webhooks.
@@ -156,6 +160,16 @@ impl<C> PusherBuilder<C> {
         self
     }
 
+    /// This method changes the cluster to which API requests will be made.
+    ///
+    /// ```
+    /// # use pusher::PusherBuilder;
+    /// let pusher = PusherBuilder::new("id", "key", "secret").cluster("eu").finalize();
+    /// ```
+    pub fn cluster(self, cluster: &str) -> PusherBuilder<C> {
+        self.host(&format!("api-{cluster}.pusher.com"))
+    }
+
     /// This method determines whether requests will be made over HTTPS. This defaults to `false`.
     ///
     /// ```
@@ -184,6 +198,19 @@ impl<C> PusherBuilder<C> {
             secure: self.secure,
             http_client: self.http_client,
         }
+    }
+}
+
+impl<C> Debug for PusherBuilder<C> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PusherBuilder")
+            .field("app_id", &self.app_id)
+            .field("key", &self.key)
+            .field("secret", &"<redacted>")
+            .field("host", &self.host)
+            .field("secure", &self.secure)
+            .field("http_client", &self.http_client)
+            .finish()
     }
 }
 
@@ -226,7 +253,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         channel: &str,
         event: &str,
         payload: S,
-    ) -> Result<TriggeredEvents, String> {
+    ) -> Result<TriggeredEvents, Error> {
         let channels = vec![channel.to_string()];
         self._trigger(channels, event, payload, None).await
     }
@@ -248,7 +275,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         event: &str,
         payload: S,
         socket_id: &str,
-    ) -> Result<TriggeredEvents, String> {
+    ) -> Result<TriggeredEvents, Error> {
         let channels = vec![channel.to_string()];
         self._trigger(channels, event, payload, Some(socket_id.to_string()))
             .await
@@ -271,7 +298,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         channels: &[&str],
         event: &str,
         payload: S,
-    ) -> Result<TriggeredEvents, String> {
+    ) -> Result<TriggeredEvents, Error> {
         let channel_strings = channels.iter().map(|c| (*c).to_string()).collect();
         self._trigger(channel_strings, event, payload, None).await
     }
@@ -294,7 +321,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         event: &str,
         payload: S,
         socket_id: &str,
-    ) -> Result<TriggeredEvents, String> {
+    ) -> Result<TriggeredEvents, Error> {
         let channel_strings = channels.iter().map(|c| (*c).to_string()).collect();
         self._trigger(channel_strings, event, payload, Some(socket_id.to_string()))
             .await
@@ -306,14 +333,9 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         event: &str,
         payload: S,
         socket_id: Option<String>,
-    ) -> Result<TriggeredEvents, String> {
-        if event.len() > 200 {
-            return Err("Event name is limited to 200 chars".to_string());
-        }
-
-        if let Err(message) = validate_channels(&channels) {
-            return Err(message);
-        }
+    ) -> Result<TriggeredEvents, Error> {
+        validate_event(event)?;
+        validate_channels(&channels)?;
 
         let request_url_string = format!(
             "{}://{}/apps/{}/events",
@@ -335,7 +357,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         let body = serde_json::to_string(&raw_body).unwrap();
 
         if body.len() > 10240 {
-            return Err("Data must be smaller than 10kb".to_string());
+            return Err(Error::EventDataTooLarge(body.len()));
         }
 
         let method = "POST";
@@ -368,7 +390,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     /// pusher.channels();
     /// //=> Ok(ChannelList { channels: {"presence-chatroom": Channel { occupied: None, user_count: None, subscription_count: None }, "presence-notifications": Channel { occupied: None, user_count: None, subscription_count: None }} })
     /// ```
-    pub async fn channels(&self) -> Result<ChannelList, String> {
+    pub async fn channels(&self) -> Result<ChannelList, Error> {
         self._channels(None).await
     }
 
@@ -393,11 +415,11 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     pub async fn channels_with_options(
         &self,
         params: QueryParameters,
-    ) -> Result<ChannelList, String> {
+    ) -> Result<ChannelList, Error> {
         self._channels(Some(params)).await
     }
 
-    async fn _channels(&self, params: Option<QueryParameters>) -> Result<ChannelList, String> {
+    async fn _channels(&self, params: Option<QueryParameters>) -> Result<ChannelList, Error> {
         let request_url_string = format!(
             "{}://{}/apps/{}/channels",
             self.scheme(),
@@ -443,7 +465,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     /// pusher.channel("presence-chatroom");
     /// //=> Ok(Channel { occupied: Some(true), user_count: None, subscription_count: None })
     /// ```
-    pub async fn channel(&self, channel_name: &str) -> Result<Channel, String> {
+    pub async fn channel(&self, channel_name: &str) -> Result<Channel, Error> {
         self._channel(channel_name, None).await
     }
 
@@ -468,7 +490,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         &self,
         channel_name: &str,
         params: QueryParameters,
-    ) -> Result<Channel, String> {
+    ) -> Result<Channel, Error> {
         self._channel(channel_name, Some(params)).await
     }
 
@@ -476,7 +498,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         &self,
         channel_name: &str,
         params: Option<QueryParameters>,
-    ) -> Result<Channel, String> {
+    ) -> Result<Channel, Error> {
         let request_url_string = format!(
             "{}://{}/apps/{}/channels/{}",
             self.scheme(),
@@ -512,7 +534,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     /// pusher.channel_users("presence-chatroom");
     /// //=> Ok(ChannelUserList { users: [ChannelUser { id: "red" }, ChannelUser { id: "blue" }] })
     /// ```
-    pub async fn channel_users(&self, channel_name: &str) -> Result<ChannelUserList, String> {
+    pub async fn channel_users(&self, channel_name: &str) -> Result<ChannelUserList, Error> {
         let request_url_string = format!(
             "{}://{}/apps/{}/channels/{}/users",
             self.scheme(),
@@ -533,6 +555,23 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         );
         request_url.set_query(Some(&query));
         send_request::<C, ChannelUserList>(&self.http_client, method, request_url, None).await
+    }
+
+    /// Application security is very important so Pusher provides a mechanism for
+    /// authenticating a user.
+    pub fn authenticate_user(
+        &self,
+        socket_id: &str,
+        user: User,
+    ) -> Result<UserAuthResponse, Error> {
+        validate_socket_id(socket_id)?;
+
+        let user_data = serde_json::to_string(&user).unwrap();
+
+        let to_sign = format!("{socket_id}::user::{user_data}");
+
+        let auth = compute_auth_key(&self.key, &self.secret, &to_sign);
+        Ok(UserAuthResponse { auth, user_data })
     }
 
     /// Application security is very important so Pusher provides a mechanism for
@@ -567,8 +606,16 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         &self,
         channel_name: &str,
         socket_id: &str,
-    ) -> Result<String, &str> {
-        self.authenticate_channel(channel_name, socket_id, None)
+    ) -> Result<ChannelAuthResponse, Error> {
+        validate_socket_id(socket_id)?;
+
+        let to_sign = format!("{socket_id}:{channel_name}");
+        let auth = compute_auth_key(&self.key, &self.secret, &to_sign);
+        Ok(ChannelAuthResponse {
+            auth,
+            channel_data: None,
+            shared_secret: None,
+        })
     }
 
     /// Using presence channels is similar to private channels, but in order to identify a user,
@@ -598,34 +645,18 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         channel_name: &str,
         socket_id: &str,
         member: &Member,
-    ) -> Result<String, &str> {
-        self.authenticate_channel(channel_name, socket_id, Some(member))
-    }
+    ) -> Result<ChannelAuthResponse, Error> {
+        validate_socket_id(socket_id)?;
 
-    fn authenticate_channel(
-        &self,
-        channel_name: &str,
-        socket_id: &str,
-        member: Option<&Member>,
-    ) -> Result<String, &str> {
-        let socket_id_regex = Regex::new(r"\A\d+\.\d+\z").unwrap(); // how to make this global?
+        let channel_data = serde_json::to_string(member).expect("Serializationg to be infallible");
+        let to_sign = format!("{socket_id}:{channel_name}:{channel_data}");
 
-        if !socket_id_regex.is_match(&socket_id) {
-            return Err("Invalid socket_id");
-        }
-
-        let mut to_sign = format!("{}:{}", socket_id, channel_name);
-
-        let mut auth_map = HashMap::new();
-
-        if let Some(presence_member) = member {
-            let json_member = serde_json::to_string(presence_member).unwrap();
-            to_sign = format!("{}:{}", to_sign, json_member);
-            auth_map.insert("channel_data", json_member);
-        }
-
-        create_channel_auth(&mut auth_map, &self.key, &self.secret, &to_sign);
-        Ok(serde_json::to_string(&auth_map).unwrap())
+        let auth = compute_auth_key(&self.key, &self.secret, &to_sign);
+        Ok(ChannelAuthResponse {
+            channel_data: Some(channel_data),
+            auth,
+            shared_secret: None,
+        })
     }
 
     /// On your dashboard at http://app.pusher.com, you can set up webhooks to POST a
@@ -651,11 +682,24 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     /// pusher.webhook("supplied_key", "supplied_signature", "body")
     /// ```
     pub fn webhook(&self, key: &str, signature: &str, body: &str) -> Result<Webhook, &str> {
-        if self.key == key && check_signature(signature, &self.secret, body) {
+        if self.key == key && verify(signature, &self.secret, body) {
             let decoded_webhook: Webhook = serde_json::from_str(&body[..]).unwrap();
             return Ok(decoded_webhook);
         }
         Err("Invalid webhook")
+    }
+}
+
+impl<C> Debug for Pusher<C> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Pusher")
+            .field("app_id", &self.app_id)
+            .field("key", &self.key)
+            .field("secret", &"<redacted>")
+            .field("host", &self.host)
+            .field("secure", &self.secure)
+            .field("http_client", &self.http_client)
+            .finish()
     }
 }
 
@@ -670,9 +714,11 @@ mod tests {
     fn test_private_channel_authentication() {
         let pusher =
             PusherBuilder::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
-        let expected = "{\"auth\":\"278d425bdf160c739803:58df8b0c36d6982b82c3ecf6b4662e34fe8c25bba48f5369f135bf843651c3a4\"}".to_string();
+        let expected =
+            "278d425bdf160c739803:58df8b0c36d6982b82c3ecf6b4662e34fe8c25bba48f5369f135bf843651c3a4"
+                .to_string();
         let result = pusher.authenticate_private_channel("private-foobar", "1234.1234");
-        assert_eq!(result.unwrap(), expected)
+        assert_eq!(result.unwrap().auth, expected)
     }
 
     #[test]
@@ -687,14 +733,13 @@ mod tests {
             user_id: "10",
             user_info: Some(member_data),
         };
-        let result_json =
-            pusher.authenticate_presence_channel("presence-foobar", "1234.1234", &presence_data);
-        let result_decoded: HashMap<String, String> =
-            serde_json::from_str(&result_json.unwrap()).unwrap();
+        let result = pusher
+            .authenticate_presence_channel("presence-foobar", "1234.1234", &presence_data)
+            .unwrap();
 
-        assert_eq!(result_decoded["auth"], expected_encoded["auth"]);
+        assert_eq!(result.auth, expected_encoded["auth"]);
         assert_eq!(
-            result_decoded["channel_data"],
+            result.channel_data.unwrap(),
             expected_encoded["channel_data"]
         );
     }
@@ -704,7 +749,7 @@ mod tests {
         let pusher =
             PusherBuilder::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
         let result = pusher.authenticate_private_channel("private-foobar", "12341234");
-        assert_eq!(result.unwrap_err(), "Invalid socket_id")
+        assert!(matches!(result, Err(Error::InvalidSocketId(_))));
     }
 
     #[test]
@@ -749,17 +794,14 @@ mod tests {
         let pusher = PusherBuilder::new("id", "key", "secret").finalize();
         let channels = vec!["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"];
         let res = pusher.trigger_multi(&channels, "yolo", "woot").await;
-        assert_eq!(res.unwrap_err(), "Cannot trigger on more than 10 channels")
+        assert!(matches!(res, Err(Error::TooManyChannels(_))));
     }
 
     #[tokio::test]
     async fn test_channel_format_validation() {
         let pusher = PusherBuilder::new("id", "key", "secret").finalize();
         let res = pusher.trigger("w000^$$£@@@", "yolo", "woot").await;
-        assert_eq!(
-            res.unwrap_err(),
-            "Channels must be formatted as such: ^[-a-zA-Z0-9_=@,.;]+$"
-        )
+        assert!(matches!(res, Err(Error::InvalidChannelName(_))));
     }
 
     #[tokio::test]
@@ -772,10 +814,7 @@ mod tests {
         }
 
         let res = pusher.trigger(&channel, "yolo", "woot").await;
-        assert_eq!(
-            res.unwrap_err(),
-            "Channel names must be under 200 characters"
-        )
+        assert!(matches!(res, Err(Error::InvalidChannelName(_))));
     }
 
     #[tokio::test]
@@ -788,7 +827,7 @@ mod tests {
         }
 
         let res = pusher.trigger("yolo", "new_yolo", &data).await;
-        assert_eq!(res.unwrap_err(), "Data must be smaller than 10kb")
+        assert!(matches!(res, Err(Error::EventDataTooLarge(_))));
     }
 
     #[tokio::test]
@@ -801,7 +840,7 @@ mod tests {
         }
 
         let res = pusher.trigger("yolo", &event, "woot").await;
-        assert_eq!(res.unwrap_err(), "Event name is limited to 200 chars")
+        assert!(matches!(res, Err(Error::InvalidEventName(_))));
     }
 
     #[test]
