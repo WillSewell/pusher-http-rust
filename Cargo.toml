@@ -21,19 +21,33 @@ path = "src/lib.rs"
 name = "auth_server"
 path = "examples/auth_server.rs"
 
+
+[features]
+rustls = ["dep:rustls", "hyper-rustls", "webpki-roots"]
+
 [dependencies]
 bytes = "1.2"
 hex = "0.4"
 hmac = "0.12"
-hyper = { version = "0.14", features = ["client", "http1", "http2", "runtime", "server"] }
+hyper = { version = "0.14", features = [
+    "client",
+    "http1",
+    "http2",
+    "runtime",
+    "server",
+] }
 md-5 = "0.10"
 regex = "1.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha2 = "0.10"
 url = "2.3"
+hyper-rustls = { version = "0.24.1", optional = true }
+rustls = { version = "0.21.6", optional = true }
+thiserror = "1.0"
+webpki-roots = { version = "0.25.1", optional = true }
 
 [dev-dependencies]
-log = "0.4" # log macros are used within yup-hyper-mock
+log = "0.4"                                               # log macros are used within yup-hyper-mock
 tokio = { version = "1.24", features = ["macros", "rt"] }
 yup-hyper-mock = "6.0"

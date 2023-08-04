@@ -61,7 +61,7 @@ pub fn build_query(
     }
 
     let to_sign = format!("{}\n{}\n{}", method, path, query_string_to_sign);
-    let auth_signature = create_auth_signature(&to_sign, &secret);
+    let auth_signature = sign(&to_sign, &secret);
 
     let query_buffer = String::new();
     let mut query_serializer = Serializer::new(query_buffer);

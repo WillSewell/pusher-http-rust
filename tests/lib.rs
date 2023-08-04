@@ -6,8 +6,8 @@ extern crate tokio;
 #[macro_use]
 extern crate yup_hyper_mock;
 
-use hyper::Client;
-use pusher::PusherBuilder;
+use hyper::{Client, StatusCode};
+use pusher::{Error, PusherBuilder};
 
 mock_connector!(BadRequest {
     "http://127.0.0.1" =>       "HTTP/1.1 400 Bad Request\r\n\
@@ -57,7 +57,10 @@ async fn test_error_response_handler() {
     let res = pusher
         .channel_with_options("this_is_not_a_presence_channel", query_params)
         .await;
-    assert_eq!(res.unwrap_err(), "Error: 400 Bad Request. Cannot retrieve the user count unless the channel is a presence channel")
+    assert!(matches!(
+        res,
+        Err(Error::Response(StatusCode::BAD_REQUEST, _))
+    ));
 }
 
 #[tokio::test]

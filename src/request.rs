@@ -6,12 +6,14 @@ use hyper::{Body, Client, StatusCode, Uri};
 use std::io::Read;
 use std::str::FromStr;
 
+use crate::Error;
+
 pub async fn send_request<C, T>(
     client: &Client<C>,
     method: &str,
     request_url: url::Url,
     data: Option<String>,
-) -> Result<T, String>
+) -> Result<T, Error>
 where
     C: Connect + Clone + Send + Sync + 'static,
     T: serde::de::DeserializeOwned,
@@ -22,14 +24,13 @@ where
         .uri(request_uri)
         .header(CONTENT_TYPE, "application/json");
     let request = match data {
-        Some(body) => request_builder.body(Body::from(body)),
-        None => request_builder.body(Body::empty()),
-    }
-    .unwrap();
+        Some(body) => request_builder.body(Body::from(body))?,
+        None => request_builder.body(Body::empty())?,
+    };
 
-    let response = client.request(request).await.unwrap();
+    let response = client.request(request).await?;
     let status = response.status();
-    let mut body_reader = body::aggregate(response).await.unwrap().reader();
+    let mut body_reader = body::aggregate(response).await?.reader();
 
     match status {
         StatusCode::OK => {
@@ -39,7 +40,7 @@ where
         _ => {
             let mut body = String::new();
             body_reader.read_to_string(&mut body).unwrap();
-            Err(format!("Error: {}. {}", status, body))
+            Err(Error::Response(status, body))
         }
     }
 }
