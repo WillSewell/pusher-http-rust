@@ -17,3 +17,28 @@ pub fn validate_channels(channels: &Vec<String>) -> Result<bool, String> {
     }
     Ok(true)
 }
+
+
+pub mod serde_utils {
+    use serde::{Serialize, ser::Serializer};
+    use std::collections::{BTreeMap, HashMap};
+
+    pub fn sorted_map<S: Serializer, K: Serialize + Ord, V: Serialize>(
+        value: &HashMap<K, V>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        let mut items: Vec<(_, _)> = value.iter().collect();
+        items.sort_by(|a, b| a.0.cmp(&b.0));
+        BTreeMap::from_iter(items).serialize(serializer)
+    }
+    
+    pub fn optional_sorted_map<S: Serializer, K: Serialize + Ord, V: Serialize>(
+        value: &Option<HashMap<K, V>>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        match value {
+            Some(map) => sorted_map(map, serializer),
+            None => serializer.serialize_none(),
+        }
+    }
+}

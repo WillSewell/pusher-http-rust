@@ -662,8 +662,12 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         }
 
         let mut auth_map = HashMap::new();
-
-        let json_user_data = serde_json::to_string(&user_data).unwrap();
+        
+        let mut user_data_items: Vec<(_, _)> = user_data.iter().collect();
+        user_data_items.sort_by(|a, b| a.0.cmp(&b.0));
+        let user_data_btreemap = std::collections::BTreeMap::from_iter(user_data_items);
+        let json_user_data = serde_json::to_string(&user_data_btreemap).unwrap();
+        // let json_user_data = serde_json::to_string(&user_data).unwrap();
         let to_sign = format!("{}:user:{}", socket_id, json_user_data);
         auth_map.insert("user_data", json_user_data);
 
@@ -722,10 +726,11 @@ mod tests {
     fn test_presence_channel_authentication() {
         let pusher =
             PusherBuilder::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
-        let expected = "{\"auth\":\"278d425bdf160c739803:48dac51d2d7569e1e9c0f48c227d4b26f238fa68e5c0bb04222c966909c4f7c4\",\"channel_data\":\"{\\\"user_id\\\":\\\"10\\\",\\\"user_info\\\":{\\\"name\\\":\\\"Mr. Pusher\\\"}}\"}";
+        let expected = "{\"auth\":\"278d425bdf160c739803:57a64aa30b116d4d495d6bb56bf187698a3298c3d4959770ffd38cb05bc504fc\",\"channel_data\":\"{\\\"user_id\\\":\\\"10\\\",\\\"user_info\\\":{\\\"clan\\\":\\\"Vikings\\\",\\\"name\\\":\\\"Mr. Pusher\\\"}}\"}";
         let expected_encoded: HashMap<String, String> = serde_json::from_str(expected).unwrap();
         let mut member_data = HashMap::new();
         member_data.insert("name", "Mr. Pusher");
+        member_data.insert("clan", "Vikings");
         let presence_data = Member {
             user_id: "10",
             user_info: Some(member_data),
@@ -739,6 +744,27 @@ mod tests {
         assert_eq!(
             result_decoded["channel_data"],
             expected_encoded["channel_data"]
+        );
+    }
+
+    #[test]
+    fn test_user_authentication() {
+        let pusher =
+            PusherBuilder::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
+        let expected = "{\"auth\":\"278d425bdf160c739803:81df022feb8095ac1679cdcbc5f4dc207fb12060f164e56b6c3c87a5e88a391a\",\"user_data\":\"{\\\"id\\\":\\\"10\\\",\\\"name\\\":\\\"Mr. Pusher\\\"}\"}";
+        let expected_encoded: HashMap<String, String> = serde_json::from_str(expected).unwrap();
+        let mut user_data = HashMap::new();
+        user_data.insert("id", "10");
+        user_data.insert("name", "Mr. Pusher");
+        let result_json =
+            pusher.authenticate_user("1234.1234", user_data);
+        let result_decoded: HashMap<String, String> =
+            serde_json::from_str(&result_json.unwrap()).unwrap();
+
+        assert_eq!(result_decoded["auth"], expected_encoded["auth"]);
+        assert_eq!(
+            result_decoded["user_data"],
+            expected_encoded["user_data"]
         );
     }
 

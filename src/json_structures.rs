@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::util::serde_utils::optional_sorted_map;
+
 #[derive(Serialize)]
 pub struct TriggerEventData {
     pub name: String,
@@ -34,6 +36,7 @@ pub struct Member<'a> {
     /// Supply an id of the member
     pub user_id: &'a str,
     /// Supply any optional information to be associated with the member
+    #[serde(serialize_with = "optional_sorted_map")]
     pub user_info: Option<HashMap<&'a str, &'a str>>,
 }
 
