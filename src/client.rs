@@ -579,6 +579,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     ///
     /// **Example with hyper**
     ///
+    /// ```ignore
     /// async fn pusher_auth(req: Request<Body>) -> Result<Response<Body>, Error> {
     ///   let body = to_bytes(req).await.unwrap();
     ///   let params = parse(body.as_ref()).into_owned().collect::<HashMap<String, String>>();
@@ -624,7 +625,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
             auth_map.insert("channel_data", json_member);
         }
 
-        create_channel_auth(&mut auth_map, &self.key, &self.secret, &to_sign);
+        create_auth_token(&mut auth_map, &self.key, &self.secret, &to_sign);
         Ok(serde_json::to_string(&auth_map).unwrap())
     }
 
