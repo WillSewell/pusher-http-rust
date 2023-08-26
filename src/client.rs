@@ -629,6 +629,48 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         Ok(serde_json::to_string(&auth_map).unwrap())
     }
 
+    /// This method allows you to authenticate a user once per connection session.
+    /// Authenticating a user gives your application access to user based
+    /// features such as sending events to a user based on user id on terminating
+    /// a user’s connections immediately.
+    ///
+    /// **Example with hyper**
+    ///
+    /// ```ignore
+    /// async fn pusher_user_auth(req: Request<Body>) -> Result<Response<Body>, Error> {
+    ///   let body = to_bytes(req).await.unwrap();
+    ///   let params = parse(body.as_ref()).into_owned().collect::<HashMap<String, String>>();
+    ///   let socket_id = params.get("socket_id").unwrap();
+    ///
+    ///   let mut user_data = HashMap::new();
+    ///   user_data.insert("id", "10"); // id is required
+    ///   user_data.insert("username", "nikhilpatel");
+    ///
+    ///   let auth_signature = pusher.authenticate_user(socket_id, user_data).unwrap();
+    ///   Ok(Response::new(auth_signature.into()))
+    /// }
+    /// ```
+    pub fn authenticate_user(
+        &self,
+        socket_id: &str,
+        user_data: HashMap<&str, &str>,
+    ) -> Result<String, &str> {
+        let socket_id_regex = Regex::new(r"\A\d+\.\d+\z").unwrap(); // how to make this global?
+
+        if !socket_id_regex.is_match(&socket_id) {
+            return Err("Invalid socket_id");
+        }
+
+        let mut auth_map = HashMap::new();
+
+        let json_user_data = serde_json::to_string(&user_data).unwrap();
+        let to_sign = format!("{}:user:{}", socket_id, json_user_data);
+        auth_map.insert("user_data", json_user_data);
+
+        create_auth_token(&mut auth_map, &self.key, &self.secret, &to_sign);
+        Ok(serde_json::to_string(&auth_map).unwrap())
+    }
+
     /// On your dashboard at http://app.pusher.com, you can set up webhooks to POST a
     /// payload to your server after certain events. Such events include channels being
     /// occupied or vacated, members being added or removed in presence-channels, or
