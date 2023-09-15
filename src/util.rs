@@ -27,8 +27,7 @@ pub mod serde_utils {
         value: &HashMap<K, V>,
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
-        let mut items: Vec<(_, _)> = value.iter().collect();
-        items.sort_by(|a, b| a.0.cmp(&b.0));
+        let items: Vec<(_, _)> = value.iter().collect();
         BTreeMap::from_iter(items).serialize(serializer)
     }
     

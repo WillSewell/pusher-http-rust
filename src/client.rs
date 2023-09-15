@@ -663,11 +663,10 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
 
         let mut auth_map = HashMap::new();
         
-        let mut user_data_items: Vec<(_, _)> = user_data.iter().collect();
-        user_data_items.sort_by(|a, b| a.0.cmp(&b.0));
-        let user_data_btreemap = std::collections::BTreeMap::from_iter(user_data_items);
-        let json_user_data = serde_json::to_string(&user_data_btreemap).unwrap();
-        // let json_user_data = serde_json::to_string(&user_data).unwrap();
+        let user_data_items: Vec<(_, _)> = user_data.iter().collect();
+        let user_data_map = std::collections::BTreeMap::from_iter(user_data_items);
+        let json_user_data = serde_json::to_string(&user_data_map).unwrap();
+        
         let to_sign = format!("{}:user:{}", socket_id, json_user_data);
         auth_map.insert("user_data", json_user_data);
 
