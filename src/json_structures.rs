@@ -38,6 +38,18 @@ pub struct Member<'a> {
     /// Supply any optional information to be associated with the member
     #[serde(serialize_with = "optional_sorted_map", skip_serializing_if = "Option::is_none")]
     pub user_info: Option<HashMap<&'a str, &'a str>>,
+}
+
+
+/// When authenticating user, this represents a particular user.
+/// This object becomes associated with that user's subscription.
+#[derive(Serialize)]
+pub struct User<'a> {
+    /// Supply an id of the user
+    pub id: &'a str,
+    /// Supply any optional information to be associated with the user
+    #[serde(serialize_with = "optional_sorted_map", skip_serializing_if = "Option::is_none")]
+    pub user_info: Option<HashMap<&'a str, &'a str>>,
     /// Supply optional list of user IDs to allow viewing presence information
     #[serde(skip_serializing_if = "Option::is_none")]
     pub watchlist: Option<Vec<&'a str>>,
