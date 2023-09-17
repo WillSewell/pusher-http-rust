@@ -588,7 +588,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     ///
     ///   let mut member_data = HashMap::new();
     ///   member_data.insert("twitter", "jamiepatel");
-    ///   let member = pusher::Member{user_id: "4", user_info: Some(member_data), watchlist: None};
+    ///   let member = pusher::Member{user_id: "4", user_info: Some(member_data)};
     ///
     ///   let auth_signature = pusher.authenticate_presence_channel(channel_name, socket_id, &member).unwrap();
     ///   Ok(Response::new(auth_signature.into()))
@@ -646,8 +646,8 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     ///   member_data.insert("username".to_string(), "nikhilpatel".to_string());
     ///   member_data.insert("group".to_string(), "the-cool-one".to_string());
     ///   let watchlist = vec!["some-user-id", "some-other-user-id"];
-    ///   let member = pusher::Member {
-    ///       user_id: "10",
+    ///   let member = pusher::User {
+    ///       id: "10",
     ///       user_info: Some(member_data),
     ///       watchlist: Some(watchlist)
     ///   };
