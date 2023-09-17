@@ -631,7 +631,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
 
     /// This method allows you to authenticate a user once per connection session.
     /// Authenticating a user gives your application access to user based
-    /// features such as sending events to a user based on user id on terminating
+    /// features such as sending events to a user based on user id or terminating
     /// a user’s connections immediately.
     ///
     /// **Example with hyper**
@@ -666,7 +666,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         let user_data_items: Vec<(_, _)> = user_data.iter().collect();
         let user_data_map = std::collections::BTreeMap::from_iter(user_data_items);
         let json_user_data = serde_json::to_string(&user_data_map).unwrap();
-        
+
         let to_sign = format!("{}:user:{}", socket_id, json_user_data);
         auth_map.insert("user_data", json_user_data);
 
