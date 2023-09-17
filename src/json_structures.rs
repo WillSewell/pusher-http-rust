@@ -36,8 +36,11 @@ pub struct Member<'a> {
     /// Supply an id of the member
     pub user_id: &'a str,
     /// Supply any optional information to be associated with the member
-    #[serde(serialize_with = "optional_sorted_map")]
+    #[serde(serialize_with = "optional_sorted_map", skip_serializing_if = "Option::is_none")]
     pub user_info: Option<HashMap<&'a str, &'a str>>,
+    /// Supply optional list of user IDs to allow viewing presence information
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub watchlist: Option<Vec<&'a str>>,
 }
 
 /// This is returned upon validating that a webhook is indeed from Pusher,

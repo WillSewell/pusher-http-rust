@@ -588,7 +588,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     ///
     ///   let mut member_data = HashMap::new();
     ///   member_data.insert("twitter", "jamiepatel");
-    ///   let member = pusher::Member{user_id: "4", user_info: Some(member_data)};
+    ///   let member = pusher::Member{user_id: "4", user_info: Some(member_data), watchlist: None};
     ///
     ///   let auth_signature = pusher.authenticate_presence_channel(channel_name, socket_id, &member).unwrap();
     ///   Ok(Response::new(auth_signature.into()))
@@ -642,18 +642,24 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     ///   let params = parse(body.as_ref()).into_owned().collect::<HashMap<String, String>>();
     ///   let socket_id = params.get("socket_id").unwrap();
     ///
-    ///   let mut user_data = HashMap::new();
-    ///   user_data.insert("id".to_string(), "10".to_string()); // id is required
-    ///   user_data.insert("username".to_string(), "nikhilpatel".to_string());
+    ///   let mut member_data = HashMap::new();
+    ///   member_data.insert("username".to_string(), "nikhilpatel".to_string());
+    ///   member_data.insert("group".to_string(), "the-cool-one".to_string());
+    ///   let watchlist = vec!["some-user-id", "some-other-user-id"];
+    ///   let member = pusher::Member {
+    ///       user_id: "10",
+    ///       user_info: Some(member_data),
+    ///       watchlist: Some(watchlist)
+    ///   };
     ///
-    ///   let auth_signature = pusher.authenticate_user(socket_id, user_data).unwrap();
+    ///   let auth_signature = pusher.authenticate_user(socket_id, member).unwrap();
     ///   Ok(Response::new(auth_signature.into()))
     /// }
     /// ```
     pub fn authenticate_user(
         &self,
         socket_id: &str,
-        user_data: HashMap<String, String>,
+        member: &Member,
     ) -> Result<String, &str> {
         let socket_id_regex = Regex::new(r"\A\d+\.\d+\z").unwrap(); // how to make this global?
 
@@ -663,12 +669,10 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
 
         let mut auth_map = HashMap::new();
         
-        let user_data_items: Vec<(_, _)> = user_data.iter().collect();
-        let user_data_map = std::collections::BTreeMap::from_iter(user_data_items);
-        let json_user_data = serde_json::to_string(&user_data_map).unwrap();
+        let json_member = serde_json::to_string(member).unwrap();
 
-        let to_sign = format!("{}:user:{}", socket_id, json_user_data);
-        auth_map.insert("user_data", json_user_data);
+        let to_sign = format!("{}:user:{}", socket_id, json_member);
+        auth_map.insert("user_data", json_member);
 
         create_auth_token(&mut auth_map, &self.key, &self.secret, &to_sign);
         Ok(serde_json::to_string(&auth_map).unwrap())
@@ -733,6 +737,7 @@ mod tests {
         let presence_data = Member {
             user_id: "10",
             user_info: Some(member_data),
+            watchlist: None,
         };
         let result_json =
             pusher.authenticate_presence_channel("presence-foobar", "1234.1234", &presence_data);
@@ -750,13 +755,18 @@ mod tests {
     fn test_user_authentication() {
         let pusher =
             PusherBuilder::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
-        let expected = "{\"auth\":\"278d425bdf160c739803:81df022feb8095ac1679cdcbc5f4dc207fb12060f164e56b6c3c87a5e88a391a\",\"user_data\":\"{\\\"id\\\":\\\"10\\\",\\\"name\\\":\\\"Mr. Pusher\\\"}\"}";
+        let expected = "{\"auth\":\"278d425bdf160c739803:34c48855fa614d30db7b013b31202b01a25b803853899aa139920099847164b2\",\"user_data\":\"{\\\"user_id\\\":\\\"10\\\",\\\"user_info\\\":{\\\"age\\\":\\\"101\\\",\\\"name\\\":\\\"Mr. Pusher\\\"}}\"}";
         let expected_encoded: HashMap<String, String> = serde_json::from_str(expected).unwrap();
-        let mut user_data = HashMap::new();
-        user_data.insert("id".to_string(), "10".to_string());
-        user_data.insert("name".to_string(), "Mr. Pusher".to_string());
+        let mut member_data = HashMap::new();
+        member_data.insert("name", "Mr. Pusher");
+        member_data.insert("age", "101");
+        let user = Member {
+            user_id: "10",
+            user_info: Some(member_data),
+            watchlist: None,
+        };
         let result_json =
-            pusher.authenticate_user("1234.1234", user_data);
+            pusher.authenticate_user("1234.1234", &user);
         let result_decoded: HashMap<String, String> =
             serde_json::from_str(&result_json.unwrap()).unwrap();
 

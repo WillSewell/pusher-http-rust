@@ -41,6 +41,7 @@ async fn authenticate(req: Request<Body>) -> Result<Response<Body>, Error> {
     let member = pusher::Member {
         user_id: "4",
         user_info: Some(member_data),
+        watchlist: None,
     };
     let auth_signature = pusher
         .authenticate_presence_channel(channel_name, socket_id, &member)
