@@ -642,17 +642,17 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     ///   let params = parse(body.as_ref()).into_owned().collect::<HashMap<String, String>>();
     ///   let socket_id = params.get("socket_id").unwrap();
     ///
-    ///   let mut member_data = HashMap::new();
-    ///   member_data.insert("username".to_string(), "nikhilpatel".to_string());
-    ///   member_data.insert("group".to_string(), "the-cool-one".to_string());
+    ///   let mut user_data = HashMap::new();
+    ///   user_data.insert("username".to_string(), "nikhilpatel".to_string());
+    ///   user_data.insert("group".to_string(), "the-cool-one".to_string());
     ///   let watchlist = vec!["some-user-id", "some-other-user-id"];
-    ///   let member = pusher::User {
+    ///   let user = pusher::User {
     ///       id: "10",
-    ///       user_info: Some(member_data),
+    ///       user_info: Some(user_data),
     ///       watchlist: Some(watchlist)
     ///   };
     ///
-    ///   let auth_signature = pusher.authenticate_user(socket_id, member).unwrap();
+    ///   let auth_signature = pusher.authenticate_user(socket_id, &user).unwrap();
     ///   Ok(Response::new(auth_signature.into()))
     /// }
     /// ```
