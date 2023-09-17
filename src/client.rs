@@ -643,8 +643,8 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     ///   let socket_id = params.get("socket_id").unwrap();
     ///
     ///   let mut user_data = HashMap::new();
-    ///   user_data.insert("id", "10"); // id is required
-    ///   user_data.insert("username", "nikhilpatel");
+    ///   user_data.insert("id".to_string(), "10".to_string()); // id is required
+    ///   user_data.insert("username".to_string(), "nikhilpatel".to_string());
     ///
     ///   let auth_signature = pusher.authenticate_user(socket_id, user_data).unwrap();
     ///   Ok(Response::new(auth_signature.into()))
@@ -653,7 +653,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     pub fn authenticate_user(
         &self,
         socket_id: &str,
-        user_data: HashMap<&str, &str>,
+        user_data: HashMap<String, String>,
     ) -> Result<String, &str> {
         let socket_id_regex = Regex::new(r"\A\d+\.\d+\z").unwrap(); // how to make this global?
 
@@ -753,8 +753,8 @@ mod tests {
         let expected = "{\"auth\":\"278d425bdf160c739803:81df022feb8095ac1679cdcbc5f4dc207fb12060f164e56b6c3c87a5e88a391a\",\"user_data\":\"{\\\"id\\\":\\\"10\\\",\\\"name\\\":\\\"Mr. Pusher\\\"}\"}";
         let expected_encoded: HashMap<String, String> = serde_json::from_str(expected).unwrap();
         let mut user_data = HashMap::new();
-        user_data.insert("id", "10");
-        user_data.insert("name", "Mr. Pusher");
+        user_data.insert("id".to_string(), "10".to_string());
+        user_data.insert("name".to_string(), "Mr. Pusher".to_string());
         let result_json =
             pusher.authenticate_user("1234.1234", user_data);
         let result_decoded: HashMap<String, String> =
