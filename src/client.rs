@@ -300,6 +300,30 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
             .await
     }
 
+    /// This method allow you to trigger an event to an authenticated user.
+    ///
+    /// **Example:**
+    ///
+    /// ```
+    /// # use pusher::PusherBuilder;
+    /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
+    /// let user_id = "10";
+    /// pusher.send_to_user(user_id, "my_event", "hello");
+    /// ```
+    pub async fn send_to_user<S: serde::Serialize>(
+        &self,
+        user_id: &str,
+        event: &str,
+        payload: S,
+    ) -> Result<TriggeredEvents, String> {
+        if let Err(message) = validate_user_id(user_id) {
+            return Err(message);
+        }
+        let channels = vec![format!("#server-to-user-{}", user_id)];
+        self._trigger(channels, event, payload, None)
+            .await
+    }
+
     async fn _trigger<S: serde::Serialize>(
         &self,
         channels: Vec<String>,
@@ -678,6 +702,49 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
         Ok(serde_json::to_string(&auth_map).unwrap())
     }
 
+
+    /// This method allows you to terminate all connections for an authenticated user.
+    ///
+    /// **Example:**
+    ///
+    /// ```ignore
+    /// # use pusher::PusherBuilder;
+    /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
+    /// let user_id = "10";
+    /// pusher.terminate_user_connections(user_id);
+    /// ```
+    pub async fn terminate_user_connections(
+        &self,
+        user_id: &str
+    ) -> Result<(), String> {
+        if let Err(message) = validate_user_id(user_id) {
+            return Err(message);
+        }
+
+        let request_url_string = format!(
+            "{}://{}/users/{}/terminate_connections",
+            self.scheme(),
+            self.host,
+            user_id,
+        );
+        let mut request_url = Url::parse(&request_url_string).unwrap();
+        
+        let body = "".to_string();
+
+        let method = "POST";
+        let query = build_query(
+            method,
+            request_url.path(),
+            &self.key,
+            &self.secret,
+            timestamp(),
+            Some(&body),
+            None,
+        );
+        request_url.set_query(Some(&query));
+        send_request::<C, ()>(&self.http_client, method, request_url, Some(body)).await
+    }
+
     /// On your dashboard at http://app.pusher.com, you can set up webhooks to POST a
     /// payload to your server after certain events. Such events include channels being
     /// occupied or vacated, members being added or removed in presence-channels, or
@@ -756,13 +823,13 @@ mod tests {
             PusherBuilder::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
         let expected = "{\"auth\":\"278d425bdf160c739803:2a475eafe42c10a641c2ae25156e14d68de2e39135f82fe27cb01c8926af22f8\",\"user_data\":\"{\\\"id\\\":\\\"10\\\",\\\"user_info\\\":{\\\"age\\\":\\\"101\\\",\\\"name\\\":\\\"Mr. Pusher\\\"},\\\"watchlist\\\":[\\\"43\\\",\\\"513\\\",\\\"12\\\"]}\"}";
         let expected_encoded: HashMap<String, String> = serde_json::from_str(expected).unwrap();
-        let mut member_data = HashMap::new();
-        member_data.insert("name", "Mr. Pusher");
-        member_data.insert("age", "101");
+        let mut user_info = HashMap::new();
+        user_info.insert("name", "Mr. Pusher");
+        user_info.insert("age", "101");
         let watchlist = vec!["43", "513", "12"];
         let user = User {
             id: "10",
-            user_info: Some(member_data),
+            user_info: Some(user_info),
             watchlist: Some(watchlist),
         };
         let result_json =

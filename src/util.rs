@@ -18,6 +18,13 @@ pub fn validate_channels(channels: &Vec<String>) -> Result<bool, String> {
     Ok(true)
 }
 
+pub fn validate_user_id(user_id: &str) -> Result<bool, String> {
+    if user_id.is_empty() {
+        return Err("Invalid user id".to_string());
+    }
+    Ok(true)
+}
+
 
 pub mod serde_utils {
     use serde::{Serialize, ser::Serializer};
