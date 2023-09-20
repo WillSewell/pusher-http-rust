@@ -50,6 +50,6 @@ mod util;
 
 pub use self::client::{Pusher, PusherBuilder};
 pub use self::json_structures::{
-    Channel, ChannelList, ChannelUser, ChannelUserList, Member, QueryParameters, TriggeredEvents,
+    Channel, ChannelList, ChannelUser, ChannelUserList, Member, QueryParameters, TriggeredEvents, User,
     Webhook,
 };

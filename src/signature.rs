@@ -13,7 +13,7 @@ pub fn create_body_md5(body: &str) -> String {
     result.encode_hex()
 }
 
-pub fn create_channel_auth<'a>(
+pub fn create_auth_token<'a>(
     auth_map: &mut HashMap<&'a str, String>,
     key: &str,
     secret: &str,
