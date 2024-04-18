@@ -29,7 +29,7 @@ pub struct ChannelList {
 
 /// When authenticating presence-channels, this represents a particular member
 /// of the channel. This object becomes associated with that user's subscription.
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Member<'a> {
     /// Supply an id of the member
     pub user_id: &'a str,
@@ -70,4 +70,30 @@ pub struct ChannelUserList {
 #[derive(Deserialize, Debug)]
 pub struct ChannelUser {
     pub id: String,
+}
+
+/// When authenticating presence-channels, this represents a particular member
+/// of the channel. This object becomes associated with that user's subscription.
+#[derive(Serialize, Debug)]
+pub struct User<'a> {
+    /// Supply an id for the user
+    pub id: &'a str,
+    /// Supply any optional information to be associated with the member
+    pub user_info: Option<HashMap<&'a str, &'a str>>,
+    pub watchlist: Vec<&'a str>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserAuthResponse {
+    pub(crate) auth: String,
+    pub(crate) user_data: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ChannelAuthResponse {
+    pub(crate) auth: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) channel_data: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) shared_secret: Option<String>,
 }
