@@ -80,7 +80,7 @@ pub struct User<'a> {
     pub id: &'a str,
     /// Supply any optional information to be associated with the member
     pub user_info: Option<HashMap<&'a str, &'a str>>,
-    pub watchlist: Option<Vec<&'a str>>,
+    pub watchlist: Vec<&'a str>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
