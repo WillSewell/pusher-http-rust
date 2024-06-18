@@ -1,5 +1,8 @@
 # Pusher HTTP Rust Library
 
+> [!WARNING]  
+> **This library is unsupported**. I (the maintainer) do not currently have the bandwidth to review PRs, address security issues etc. Forks are encouraged.
+
 [![Build Status](https://github.com/pusher-community/pusher-http-rust/workflows/Tests/badge.svg)](https://github.com/pusher-community/pusher-http-rust/actions)
 [![Crates Badge](https://img.shields.io/crates/v/pusher)](https://crates.io/crates/pusher)
 [![Docs.rs Badge](https://docs.rs/pusher/badge.svg)](https://docs.rs/pusher/)
