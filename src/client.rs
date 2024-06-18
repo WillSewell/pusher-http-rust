@@ -300,6 +300,30 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
             .await
     }
 
+    /// This method allow you to trigger an event to an authenticated user.
+    ///
+    /// **Example:**
+    ///
+    /// ```
+    /// # use pusher::PusherBuilder;
+    /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
+    /// let user_id = "10";
+    /// pusher.send_to_user(user_id, "my_event", "hello");
+    /// ```
+    pub async fn send_to_user<S: serde::Serialize>(
+        &self,
+        user_id: &str,
+        event: &str,
+        payload: S,
+    ) -> Result<TriggeredEvents, String> {
+        if let Err(message) = validate_user_id(user_id) {
+            return Err(message);
+        }
+        let channels = vec![format!("#server-to-user-{}", user_id)];
+        self._trigger(channels, event, payload, None)
+            .await
+    }
+
     async fn _trigger<S: serde::Serialize>(
         &self,
         channels: Vec<String>,
@@ -579,6 +603,7 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
     ///
     /// **Example with hyper**
     ///
+    /// ```ignore
     /// async fn pusher_auth(req: Request<Body>) -> Result<Response<Body>, Error> {
     ///   let body = to_bytes(req).await.unwrap();
     ///   let params = parse(body.as_ref()).into_owned().collect::<HashMap<String, String>>();
@@ -624,8 +649,100 @@ impl<C: Connect + Clone + Send + Sync + 'static> Pusher<C> {
             auth_map.insert("channel_data", json_member);
         }
 
-        create_channel_auth(&mut auth_map, &self.key, &self.secret, &to_sign);
+        create_auth_token(&mut auth_map, &self.key, &self.secret, &to_sign);
         Ok(serde_json::to_string(&auth_map).unwrap())
+    }
+
+    /// This method allows you to authenticate a user once per connection session.
+    /// Authenticating a user gives your application access to user based
+    /// features such as sending events to a user based on user id or terminating
+    /// a user’s connections immediately.
+    ///
+    /// **Example with hyper**
+    ///
+    /// ```ignore
+    /// async fn pusher_user_auth(req: Request<Body>) -> Result<Response<Body>, Error> {
+    ///   let body = to_bytes(req).await.unwrap();
+    ///   let params = parse(body.as_ref()).into_owned().collect::<HashMap<String, String>>();
+    ///   let socket_id = params.get("socket_id").unwrap();
+    ///
+    ///   let mut user_data = HashMap::new();
+    ///   user_data.insert("username".to_string(), "nikhilpatel".to_string());
+    ///   user_data.insert("group".to_string(), "the-cool-one".to_string());
+    ///   let watchlist = vec!["some-user-id", "some-other-user-id"];
+    ///   let user = pusher::User {
+    ///       id: "10",
+    ///       user_info: Some(user_data),
+    ///       watchlist: Some(watchlist)
+    ///   };
+    ///
+    ///   let auth_signature = pusher.authenticate_user(socket_id, &user).unwrap();
+    ///   Ok(Response::new(auth_signature.into()))
+    /// }
+    /// ```
+    pub fn authenticate_user(
+        &self,
+        socket_id: &str,
+        user: &User,
+    ) -> Result<String, &str> {
+        let socket_id_regex = Regex::new(r"\A\d+\.\d+\z").unwrap(); // how to make this global?
+
+        if !socket_id_regex.is_match(&socket_id) {
+            return Err("Invalid socket_id");
+        }
+
+        let json_user = serde_json::to_string(user).unwrap();
+        
+        let to_sign = format!("{}:user:{}", socket_id, json_user);
+
+        let mut auth_map = HashMap::new();
+        auth_map.insert("user_data", json_user);
+
+        create_auth_token(&mut auth_map, &self.key, &self.secret, &to_sign);
+        Ok(serde_json::to_string(&auth_map).unwrap())
+    }
+
+
+    /// This method allows you to terminate all connections for an authenticated user.
+    ///
+    /// **Example:**
+    ///
+    /// ```ignore
+    /// # use pusher::PusherBuilder;
+    /// # let pusher = PusherBuilder::new("id", "key", "secret").finalize();
+    /// let user_id = "10";
+    /// pusher.terminate_user_connections(user_id);
+    /// ```
+    pub async fn terminate_user_connections(
+        &self,
+        user_id: &str
+    ) -> Result<(), String> {
+        if let Err(message) = validate_user_id(user_id) {
+            return Err(message);
+        }
+
+        let request_url_string = format!(
+            "{}://{}/users/{}/terminate_connections",
+            self.scheme(),
+            self.host,
+            user_id,
+        );
+        let mut request_url = Url::parse(&request_url_string).unwrap();
+        
+        let body = "".to_string();
+
+        let method = "POST";
+        let query = build_query(
+            method,
+            request_url.path(),
+            &self.key,
+            &self.secret,
+            timestamp(),
+            Some(&body),
+            None,
+        );
+        request_url.set_query(Some(&query));
+        send_request::<C, ()>(&self.http_client, method, request_url, Some(body)).await
     }
 
     /// On your dashboard at http://app.pusher.com, you can set up webhooks to POST a
@@ -679,10 +796,11 @@ mod tests {
     fn test_presence_channel_authentication() {
         let pusher =
             PusherBuilder::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
-        let expected = "{\"auth\":\"278d425bdf160c739803:48dac51d2d7569e1e9c0f48c227d4b26f238fa68e5c0bb04222c966909c4f7c4\",\"channel_data\":\"{\\\"user_id\\\":\\\"10\\\",\\\"user_info\\\":{\\\"name\\\":\\\"Mr. Pusher\\\"}}\"}";
+        let expected = "{\"auth\":\"278d425bdf160c739803:57a64aa30b116d4d495d6bb56bf187698a3298c3d4959770ffd38cb05bc504fc\",\"channel_data\":\"{\\\"user_id\\\":\\\"10\\\",\\\"user_info\\\":{\\\"clan\\\":\\\"Vikings\\\",\\\"name\\\":\\\"Mr. Pusher\\\"}}\"}";
         let expected_encoded: HashMap<String, String> = serde_json::from_str(expected).unwrap();
         let mut member_data = HashMap::new();
         member_data.insert("name", "Mr. Pusher");
+        member_data.insert("clan", "Vikings");
         let presence_data = Member {
             user_id: "10",
             user_info: Some(member_data),
@@ -696,6 +814,33 @@ mod tests {
         assert_eq!(
             result_decoded["channel_data"],
             expected_encoded["channel_data"]
+        );
+    }
+
+    #[test]
+    fn test_user_authentication() {
+        let pusher =
+            PusherBuilder::new("id", "278d425bdf160c739803", "7ad3773142a6692b25b8").finalize();
+        let expected = "{\"auth\":\"278d425bdf160c739803:2a475eafe42c10a641c2ae25156e14d68de2e39135f82fe27cb01c8926af22f8\",\"user_data\":\"{\\\"id\\\":\\\"10\\\",\\\"user_info\\\":{\\\"age\\\":\\\"101\\\",\\\"name\\\":\\\"Mr. Pusher\\\"},\\\"watchlist\\\":[\\\"43\\\",\\\"513\\\",\\\"12\\\"]}\"}";
+        let expected_encoded: HashMap<String, String> = serde_json::from_str(expected).unwrap();
+        let mut user_info = HashMap::new();
+        user_info.insert("name", "Mr. Pusher");
+        user_info.insert("age", "101");
+        let watchlist = vec!["43", "513", "12"];
+        let user = User {
+            id: "10",
+            user_info: Some(user_info),
+            watchlist: Some(watchlist),
+        };
+        let result_json =
+            pusher.authenticate_user("1234.1234", &user);
+        let result_decoded: HashMap<String, String> =
+            serde_json::from_str(&result_json.unwrap()).unwrap();
+
+        assert_eq!(result_decoded["auth"], expected_encoded["auth"]);
+        assert_eq!(
+            result_decoded["user_data"],
+            expected_encoded["user_data"]
         );
     }
 

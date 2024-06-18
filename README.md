@@ -123,7 +123,7 @@ let pusher = PusherBuilder::new_with_client(my_client, "id", "key", "secret").ho
 
 ### Triggering events
 
-It is possible to trigger an event on one or more channels. Channel names can contain only characters which are alphanumeric, `_` or `-`` and have to be at most 200 characters long. Event name can be at most 200 characters long too.
+It is possible to trigger an event on one or more channels. Channel names can contain only characters which are alphanumeric, `_` or `-`` and have to be at most 200 characters long. Event name can be at most 200 characters long too. It is also possbie to trigger an event to a specific user.
 
 
 #### Single channel
@@ -171,13 +171,13 @@ let channels = vec!["test_channel", "test_channel2"];
 pusher.trigger_multi(&channels, "my_event", "hello").await;
 ```
 
-### Excluding event recipients
+#### Excluding event recipients
 
 `trigger_exclusive` and `trigger_multi_exclusive` follow the patterns above, except a `socket_id` is given as the last parameter.
 
 These methods allow you to exclude a recipient whose connection has that `socket_id` from receiving the event. You can read more [here](http://pusher.com/docs/duplicates).
 
-#### Examples
+###### Examples
 
 **On one channel**:
 
@@ -192,7 +192,49 @@ let channels = vec!["test_channel", "test_channel2"];
 pusher.trigger_multi_exclusive(&channels, "my_event", "hello", "123.12").await;
 ```
 
-### Authenticating Channels
+#### Send to user
+
+##### `async fn send_to_user<S: serde::Serialize>(&self, user_id: &str, event: &str, payload: S)`
+
+|Argument | Description |
+|:-:|:-:|
+|user_id `&str`| The id of the user you wish to send an event to.|
+|event `&str` | As above.|
+|data `S: serde::Serialize` |As above.|
+
+|Return Value|Description|
+|:-:|:-:|
+|result `Result<TriggeredEvents, String>` | As above. |
+
+###### Example
+
+```rust
+let user_id = "10";
+pusher.send_to_user(user_id, "my_event", "hello").await;
+```
+
+### Terminating user connections
+
+Authenticating a user allows you to terminate all connections for that given user.
+
+##### `async fn terminate_user_connections(&self, user_id: &str)`
+
+|Argument | Description |
+|:-:|:-:|
+|user_id `&str`| The id of the user whose connections you wish to terminate.|
+
+|Return Value|Description|
+|:-:|:-:|
+|result `Result<(), String>` | If the request was successful, an `Ok` value will be returned. An `Err` value will be returned if any errors were encountered. |
+
+###### Example
+
+```rust
+let user_id = "10";
+pusher.terminate_user_connections(user_id).await;
+```
+
+### Authentication
 
 Application security is very important so Pusher provides a mechanism for authenticating a user’s access to a channel at the point of subscription.
 
@@ -265,6 +307,45 @@ async fn pusher_auth(req: Request<Body>) -> Result<Response<Body>, Error> {
   let member = pusher::Member{user_id: "4", user_info: Some(member_data)};
 
   let auth_signature = pusher.authenticate_presence_channel(channel_name, socket_id, &member).unwrap();
+  Ok(Response::new(auth_signature.into()))
+}
+```
+
+#### Authenticating users
+
+We can authenticate a user once per connection session. Authenticating a user gives your application access to user based features such as sending events to a user based on user id on terminating a user’s connections immediately.
+
+##### `fn authenticate_user(&self, socket_id: &str, user: &User)`
+
+|Argument|Description|
+|:-:|:-:|
+|socket_id `&str`| The socket id in the request sent by the client|
+|user `&pusher::User`| A struct representing what to assign to a user, consisting of a `id` and any custom `user_info` and `watchlist`. See below |
+
+###### Custom Types
+
+**pusher::User**
+
+```rust
+pub struct User<'a> {
+  pub id: &'a str,
+  pub user_info: Option<HashMap<&'a str, &'a str>>,
+  pub watchlist: Option<Vec<&'a str>>,
+}
+```
+
+###### Example using hyper
+
+```rust
+async fn pusher_user_auth(req: Request<Body>) -> Result<Response<Body>, Error> {
+  let body = to_bytes(req).await.unwrap();
+  let params = parse(body.as_ref()).into_owned().collect::<HashMap<String, String>>();
+  let socket_id = params.get("socket_id").unwrap();
+  let mut user_info = HashMap::new();
+  user_info.insert("username", "nikhilpatel");
+  let watchlist = vec!["some-user-id", "some-other-user-id"];
+  let user = pusher::User {id: "10", user_info: Some(user_info), watchlist: Some(watchlist)};
+  let auth_signature = pusher.authenticate_user(socket_id, &user).unwrap();
   Ok(Response::new(auth_signature.into()))
 }
 ```
@@ -450,9 +531,12 @@ Feature                                    | Supported
 -------------------------------------------| :-------:
 Trigger event on single channel            | *&#10004;*
 Trigger event on multiple channels         | *&#10004;*
+Trigger event to specific users            | *&#10004;*
 Excluding recipients from events           | *&#10004;*
 Authenticating private channels            | *&#10004;*
 Authenticating presence channels           | *&#10004;*
+Authenticating users                       | *&#10004;*
+Terminating user connections               | *&#10004;*
 Get the list of channels in an application | *&#10004;*
 Get the state of a single channel          | *&#10004;*
 Get a list of users in a presence channel  | *&#10004;*
